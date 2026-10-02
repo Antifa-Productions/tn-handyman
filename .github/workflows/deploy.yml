@@ -106,7 +106,7 @@ jobs:
       - name: Post-deploy smoke test
         run: |
           sleep 10
-          BASE="https://tn-handyman.example.com"
+          BASE="https://tn-handyman.pages.dev/"
 
           # --- Exact-MIME checks (must match the header Cloudflare is configured to send) ---
           check_exact() {
