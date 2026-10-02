@@ -13,7 +13,7 @@
     --border: #e5e5e5;
     --shadow: rgba(0,0,0,0.08);
 
-    --ui-sans-serif, "SF Pro Text", "Segoe UI", "Open Sans", Roboto, "Liberation Sans", "Noto Sans", sans-serif;
+    --font-sans: ui-sans-serif, "SF Pro Text", "Segoe UI", "Open Sans", Roboto, "Liberation Sans", "Noto Sans", sans-serif;
     --font-serif: ui-serif, "New York", "Times New Roman", "Liberation Serif", serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", "Consolas", monospace;
 
@@ -33,6 +33,7 @@
     :root {
         --bg-light: #1a1a1a;
         --text-main: #f5f5f5;
+        --muted: #aaa;
         --border: #333;
         --shadow: rgba(0,0,0,0.25);
     }
@@ -225,15 +226,11 @@ a:hover {
 }
 
 .card {
-    background: #fff;
+    background: var(--bg-light);
+    color: var(--text-main);
     border-radius: var(--radius-lg);
     box-shadow: 0 2px 8px var(--shadow);
     overflow: hidden;
-}
-@media (prefers-color-scheme: dark) {
-    .card {
-        background: #1a1a1a;
-    }
 }
 
 .card h3 {
@@ -335,15 +332,11 @@ a:hover {
 .testimonial-card {
     flex: 0 0 min(100%, 320px);
     scroll-snap-align: start;
-    background: #fff;
+    background: var(--bg-light);
+    color: var(--text-main);
     border-radius: var(--radius-lg);
     box-shadow: 0 2px 8px var(--shadow);
     padding: var(--space-md);
-}
-@media (prefers-color-scheme: dark) {
-    .testimonial-card {
-        background: #1a1a1a;
-    }
 }
 
 .reviewer {
@@ -424,16 +417,9 @@ a:hover {
     padding: 0.6rem 0.75rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
-    background: #fff;
+    background: var(--bg-light);
     color: var(--text-main);
     font-family: inherit;
-}
-@media (prefers-color-scheme: dark) {
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        background: #1a1a1a;
-    }
 }
 
 .btn {
@@ -494,14 +480,10 @@ a:hover {
     background: rgba(0,0,0,0.6);
 }
 .modal-content {
-    background: #fff;
+    background: var(--bg-light);
+    color: var(--text-main);
     border-radius: var(--radius-lg);
     padding: var(--space-md);
-}
-@media (prefers-color-scheme: dark) {
-    .modal-content {
-        background: #1a1a1a;
-    }
 }
 .modal-header {
     display: flex;
@@ -535,7 +517,7 @@ a:hover {
     margin: var(--space-xs) 0;
 }
 .trust-note {
-    background: #f5f5f5;
+    background: var(--metadata-bg, #f5f5f5);
     border-radius: var(--radius-sm);
     padding: var(--space-sm);
     margin: var(--space-sm) 0;
