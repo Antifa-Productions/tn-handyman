@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tn-handyman.pages.dev/sitemap.xml
