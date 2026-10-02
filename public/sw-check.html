@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SW Diagnostics — T&N Handyman</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/css/style.css" crossorigin="anonymous">
+  <style>
+    .diag {
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .diag h1 { font-family: var(--font-sans); font-size: 1.25rem; }
+    .diag section {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .ok   { color: #1b5e20; }
+    .fail { color: #b71c1c; font-weight: 700; }
+    .warn { color: #e65100; }
+  </style>
+  <script src="/js/sw-check.js" defer></script>
+</head>
+<body>
+  <main class="diag">
+    <h1>Service Worker Diagnostics</h1>
+
+    <section id="support"><h2>Support</h2></section>
+
+    <section id="registration"><h2>Registration</h2></section>
+
+    <section id="lifecycle"><h2>Lifecycle</h2></section>
+
+    <section id="precache"><h2>Precache manifest</h2></section>
+
+    <section id="manifest-file"><h2>sw-precache.json (deployed)</h2></section>
+
+    <section id="controls">
+      <h2>Actions</h2>
+      <button type="button" class="btn btn-outline" id="btn-unregister">Unregister SW + clear all caches</button>
+    </section>
+  </main>
+</body>
+</html>
