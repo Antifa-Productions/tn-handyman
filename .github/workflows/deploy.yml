@@ -1,0 +1,118 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Validate manifest
+        run: node scripts/validate-manifest.mjs
+
+      - name: Generate precache manifest (SHA1 hashes)
+        run: node scripts/hash-files.mjs
+
+      - name: Verify worker syntax
+        run: node --check public/sw.js && node --check public/js/main.js && node --check public/js/contact-form.js && node --check public/js/sw-check.js
+
+      - name: Verify sw-precache.json exists and is non-empty
+        run: |
+          test -s public/sw-precache.json || { echo "::error::sw-precache.json missing or empty"; exit 1; }
+          jq length public/sw-precache.json
+
+      - name: Validate HTML (basic well-formedness)
+        run: |
+          # Fail on mismatched tags in our pages — cheap structural check
+          for f in public/index.html public/contact.html; do
+            python3 - "$f" <<'EOF'
+          import sys, html.parser
+          VOID = {'area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr'}
+          class P(html.parser.HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.stack = []
+              def handle_starttag(self, tag, attrs):
+                  if tag not in VOID: self.stack.append(tag)
+              def handle_endtag(self, tag):
+                  if self.stack and self.stack[-1] == tag:
+                      self.stack.pop()
+                  elif tag in self.stack:
+                      print(f"::error file={sys.argv[1]}::mismatched </{tag}>, open stack: {self.stack}")
+                      sys.exit(1)
+          p = P()
+          p.feed(open(sys.argv[1], encoding='utf-8').read())
+          if p.stack:
+              print(f"::error file={sys.argv[1]}::unclosed tags: {p.stack}")
+              sys.exit(1)
+          EOF
+          done
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: public/
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: public/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public/ --project-name=tn-handyman
+
+      - name: Post-deploy smoke test
+        run: |
+          sleep 10
+          BASE="https://tn-handyman.example.com"
+          check() {
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$1")
+            ctype=$(curl -s -o /dev/null -w "%{content_type}" "$1")
+            echo "$1 → $code ($ctype)"
+            test "$code" = "200" || { echo "::error::$1 returned $code"; exit 1; }
+            echo "$2" | grep -q "$(echo "$ctype" | cut -d';' -f1)" || { echo "::error::$1 wrong MIME type: $ctype"; exit 1; }
+          }
+          check "$BASE/" "text/html"
+          check "$BASE/contact" "text/html"
+          check "$BASE/css/style.css" "text/css"
+          check "$BASE/js/main.js" "text/javascript"
+          check "$BASE/sw.js" "text/javascript"
+          check "$BASE/sw-precache.json" "application/json"
+          check "$BASE/manifest.webmanifest" "application/json"
