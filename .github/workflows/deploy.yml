@@ -138,10 +138,14 @@ jobs:
           check_exact "$BASE/"                                   "text/html"
           check_exact "$BASE/contact"                            "text/html"
           check_exact "$BASE/css/style.css"                      "text/css"
-          check_exact "$BASE/js/main.js"                         "text/javascript"
-          check_exact "$BASE/js/draft-store.mjs"                 "text/javascript"
-          check_exact "$BASE/sw.js"                              "text/javascript"
-          check_exact "$BASE/workbox/workbox-sw.js"              "text/javascript"
+
+          # JavaScript files: Cloudflare Pages serves .js as application/javascript,
+          # which is equally valid per RFC 9239 alongside text/javascript.
+          check_any  "$BASE/js/main.js"                           "text/javascript" "application/javascript"
+          check_any  "$BASE/js/draft-store.mjs"                  "text/javascript" "application/javascript"
+          check_any  "$BASE/sw.js"                               "text/javascript" "application/javascript"
+          check_any  "$BASE/workbox/workbox-sw.js"               "text/javascript" "application/javascript"
+
           check_any  "$BASE/manifest.webmanifest"                "application/manifest+json" "application/json"
           check_any  "$BASE/sitemap.xml"                        "application/xml" "text/xml"
           check_any  "$BASE/sw-precache.json"                    "application/json" "text/plain"
