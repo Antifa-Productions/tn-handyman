@@ -1,2 +1,2 @@
-# t-and-n-handyman
+# tn-handyman
 Local Home Services
