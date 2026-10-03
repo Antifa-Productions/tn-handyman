@@ -1,7 +1,6 @@
 {
   "name": "tn-handyman-site",
   "version": "0.0.1",
-  "private": true,
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate-manifest.mjs",
