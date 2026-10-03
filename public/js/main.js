@@ -31,13 +31,23 @@
     // ---- Welcome modal: show once per session ----
     const modal = document.getElementById('welcome-modal');
 
-    if (modal && !sessionStorage.getItem('welcomeDismissed')) {
-        setTimeout(() => {
-            modal.showModal();
-        }, 400);
+    if (modal) {
+        if (!sessionStorage.getItem('welcomeDismissed')) {
+            setTimeout(() => {
+                modal.showModal();
+            }, 400);
+        }
 
+        // "Browse the Site" is a submit button inside <form method="dialog">:
+        // the browser closes the dialog natively and sets returnValue to the
+        // button's value. We react to the close to jump to the services section.
         modal.addEventListener('close', () => {
             sessionStorage.setItem('welcomeDismissed', 'true');
+
+            if (modal.returnValue === 'browse') {
+                document.getElementById('services')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+            }
         });
 
         const closeBtn = modal.querySelector('.close-btn');
@@ -46,6 +56,13 @@
                 modal.close();
             });
         }
+
+        // Safety net: tapping the backdrop (outside the dialog box) closes it.
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.close();
+            }
+        });
     }
 
     // ---- Testimonial carousel controls ----
