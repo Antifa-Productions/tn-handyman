@@ -1,100 +1,95 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <title>Contact — T&N Handyman</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Get in touch with T&N Handyman for a free estimate. We respond quickly to inquiries about landscaping, tree work, painting, carpentry, and more.">
-  <link rel="canonical" href="https://tn-handyman.example.com/contact">
-  
-  <!-- Styles -->
-  <link rel="stylesheet" href="/css/style.css" crossorigin="anonymous">
-  
-  <!-- Favicons & PWA -->
-  <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-light.svg" media="(prefers-color-scheme: light)">
-  <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-dark.svg" media="(prefers-color-scheme: dark)">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/png/apple-touch-icon.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#54428e" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
-  
-  <!-- Scripts -->
-  <script src="/js/main.js" defer></script>
-  <script src="/js/contact-form.js" defer></script>
+    <meta charset="utf-8">
+    <title>Contact — T&N Handyman</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="Get in touch with T&N Handyman for a free estimate. We respond quickly to inquiries about landscaping, tree work, painting, carpentry, and more.">
+    <link rel="canonical" href="https://tn-handyman.example.com/contact">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/style.css" crossorigin="anonymous">
+
+    <!-- Favicons & PWA -->
+    <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-light.svg" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-dark.svg" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/png/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#54428e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+
+    <!-- Scripts -->
+    <script src="/js/main.js" defer></script>
+    <script src="/js/contact-form.js" defer></script>
 </head>
+
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="/" class="logo" aria-label="T&N Handyman home">
-        <img src="/images/svg/logo.svg" alt="T&N Handyman logo">
-      </a>
-      <button class="nav-toggle" aria-controls="primary-nav" aria-expanded="false" aria-label="Toggle navigation">
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/" class="logo" aria-label="T&N Handyman home">
+                <img src="/images/svg/logo.svg" alt="T&N Handyman logo">
+            </a>
+            <button class="nav-toggle" aria-controls="primary-nav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="hamburger"></span>
       </button>
-      <nav id="primary-nav" class="primary-nav" aria-labelledby="nav-heading">
-        <h2 id="nav-heading" class="visually-hidden">Main navigation</h2>
-        <ul>
-          <li><a href="/#services">Services</a></li>
-          <li><a href="/#how-it-works">How it works</a></li>
-          <li><a href="/#testimonials">Reviews</a></li>
-          <li><a href="/#recent-work">Recent work</a></li>
-          <li><a href="/contact" aria-current="page">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+            <nav id="primary-nav" class="primary-nav" aria-labelledby="nav-heading">
+                <h2 id="nav-heading" class="visually-hidden">Main navigation</h2>
+                <ul>
+                    <li><a href="/#services">Services</a></li>
+                    <li><a href="/#how-it-works">How it works</a></li>
+                    <li><a href="/#testimonials">Reviews</a></li>
+                    <li><a href="/#recent-work">Recent work</a></li>
+                    <li><a href="/contact" aria-current="page">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-  <main>
-    <section class="section contact-section">
-      <div class="container">
-        <h1>Contact Us</h1>
-        <p>Tell us what you need done. We'll get back to you quickly with a free estimate.</p>
+    <main>
+        <section class="section contact-section">
+            <div class="container">
+                <h1>Contact Us</h1>
+                <p>Tell us what you need done. We'll get back to you quickly with a free estimate.</p>
 
-        <!-- 
+                <!-- 
           FORM CONFIGURATION:
           1. Replace 'YOUR_FORMSPREE_ID' with your actual Formspree endpoint (e.g., f/abc123xyz).
           2. The form has 'novalidate' so our custom JS handles validation.
           3. It has a hidden 'form_started_at' field for spam timing checks.
           4. The 'company' field is a honeypot (hidden via CSS) to catch bots.
         -->
-        <form
-          id="contact-form"
-          class="contact-form"
-          action="https://formspree.io/f/YOUR_FORMSPREE_ID"
-          method="POST"
-          enctype="multipart/form-data"
-          novalidate
-        >
-          <!-- Hidden timestamp for spam detection -->
-          <input type="hidden" name="form_started_at" id="form-started-at" value="">
+                <form id="contact-form" class="contact-form" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST" enctype="multipart/form-data" novalidate>
+                    <!-- Hidden timestamp for spam detection -->
+                    <input type="hidden" name="form_started_at" id="form-started-at" value="">
 
-          <!-- Honeypot: Real users never see or fill this. Bots often do. -->
-          <div class="hp-field" aria-hidden="true">
-            <label for="company">Company</label>
-            <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
-          </div>
+                    <!-- Honeypot: Real users never see or fill this. Bots often do. -->
+                    <div class="hp-field" aria-hidden="true">
+                        <label for="company">Company</label>
+                        <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+                    </div>
 
-          <div class="form-group">
-            <label for="name">Name *</label>
-            <input id="name" name="name" type="text" autocomplete="name" required>
-            <p class="field-error" id="name-error" aria-live="polite"></p>
-          </div>
+                    <div class="form-group">
+                        <label for="name">Name *</label>
+                        <input id="name" name="name" type="text" autocomplete="name" required>
+                        <p class="field-error" id="name-error" aria-live="polite"></p>
+                    </div>
 
-          <div class="form-group">
-            <label for="email">Email *</label>
-            <input id="email" name="email" type="email" autocomplete="email" required>
-            <p class="field-error" id="email-error" aria-live="polite"></p>
-          </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input id="email" name="email" type="email" autocomplete="email" required>
+                        <p class="field-error" id="email-error" aria-live="polite"></p>
+                    </div>
 
-          <div class="form-group">
-            <label for="phone">Phone</label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel">
-            <p class="field-error" id="phone-error" aria-live="polite"></p>
-          </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input id="phone" name="phone" type="tel" autocomplete="tel">
+                        <p class="field-error" id="phone-error" aria-live="polite"></p>
+                    </div>
 
-          <div class="form-group">
-            <label for="service-type">Service needed</label>
-            <select id="service-type" name="service-type">
+                    <div class="form-group">
+                        <label for="service-type">Service needed</label>
+                        <select id="service-type" name="service-type">
               <option value="">Select a service…</option>
               <option>Yard work / fall cleanup</option>
               <option>Tree trimming / removal</option>
@@ -103,49 +98,50 @@
               <option>Repairs (faucets, doors, etc.)</option>
               <option>Other</option>
             </select>
-          </div>
+                    </div>
 
-          <div class="form-group">
-            <label for="message">Message *</label>
-            <textarea id="message" name="message" rows="5" minlength="10" maxlength="2000" required></textarea>
-            <p class="char-counter" id="char-counter" aria-live="off">0 / 2000 characters</p>
-            <p class="field-error" id="message-error" aria-live="polite"></p>
-          </div>
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" name="message" rows="5" minlength="10" maxlength="2000" required></textarea>
+                        <p class="char-counter" id="char-counter" aria-live="off">0 / 2000 characters</p>
+                        <p class="field-error" id="message-error" aria-live="polite"></p>
+                    </div>
 
-          <div class="form-group">
-            <label for="attachment">Attach a photo (optional)</label>
-            <input id="attachment" name="attachment" type="file" accept="image/*">
-            <p class="field-hint">Photos of the job help us give an accurate estimate.</p>
-          </div>
+                    <div class="form-group">
+                        <label for="attachment">Attach a photo (optional)</label>
+                        <input id="attachment" name="attachment" type="file" accept="image/*">
+                        <p class="field-hint">Photos of the job help us give an accurate estimate.</p>
+                    </div>
 
-          <!-- Status messages for success/error -->
-          <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
-          
-          <!-- Draft save status -->
-          <p class="draft-status" id="draft-status" aria-live="polite"></p>
+                    <!-- Status messages for success/error -->
+                    <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
 
-          <button type="submit" class="btn btn-primary" id="submit-btn">Send Message</button>
-        </form>
+                    <!-- Draft save status -->
+                    <p class="draft-status" id="draft-status" aria-live="polite"></p>
 
-        <p class="alt-contact">
-          Prefer to call or text? <a href="tel:+16033598272">(603) 359‑8272</a>
-        </p>
-      </div>
-    </section>
-  </main>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Send Message</button>
+                </form>
 
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; 2026 T&N Handyman. All rights reserved.</p>
-      <p>Fully insured LLC. Serving the Upper Valley.</p>
-      <nav aria-label="Footer navigation">
-        <ul>
-          <li><a href="/contact" aria-current="page">Contact</a></li>
-          <li><a href="/privacy">Privacy</a></li>
-          <li><a href="/Gutenberg-License">License</a></li>
-        </ul>
-      </nav>
-    </div>
-  </footer>
+                <p class="alt-contact">
+                    Prefer to call or text? <a href="tel:+16033598272">(603) 359‑8272</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 T&N Handyman. All rights reserved.</p>
+            <p>Fully insured LLC. Serving the Upper Valley.</p>
+            <nav aria-label="Footer navigation">
+                <ul>
+                    <li><a href="/contact" aria-current="page">Contact</a></li>
+                    <li><a href="/privacy">Privacy</a></li>
+                    <li><a href="/Gutenberg-License">License</a></li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
 </body>
+
 </html>
