@@ -28,7 +28,14 @@
     --radius-lg: 0.75rem;
 
     --max-w: 1100px;
+
+    /* Safe Area Insets for Notch/Landscape (Dynamic Island, Camera, etc.) */
+    --safe-area-inset-top: env(safe-area-inset-top, 0);
+    --safe-area-inset-right: env(safe-area-inset-right, 0);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
+    --safe-area-inset-left: env(safe-area-inset-left, 0);
 }
+
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-light: #1a1a1a;
@@ -99,17 +106,24 @@ a:hover {
     margin: -1px;
 }
 
+/* Updated Container to respect safe areas in landscape */
 .container {
-    width: min(100% - var(--space-md), var(--max-w));
+    width: min(100% - var(--space-md) - var(--safe-area-inset-left) - var(--safe-area-inset-right), var(--max-w));
     margin-inline: auto;
+    padding-left: max(var(--space-sm), var(--safe-area-inset-left));
+    padding-right: max(var(--space-sm), var(--safe-area-inset-right));
 }
 
+/* Updated Header to respect safe areas (top notch + side islands) */
 .site-header {
     position: sticky;
     top: 0;
     z-index: 1000;
     background: var(--bg-dark);
     color: var(--text-light);
+    padding-top: var(--safe-area-inset-top);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
 }
 
 .header-inner {
@@ -453,11 +467,14 @@ a:hover {
     margin-top: var(--space-md);
 }
 
+/* Updated Footer to respect safe areas in landscape */
 .site-footer {
     background: var(--bg-dark);
     color: var(--text-light);
     padding: var(--space-md) 0;
     text-align: center;
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
 }
 .site-footer ul {
     list-style: none;
