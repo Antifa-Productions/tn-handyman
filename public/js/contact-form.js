@@ -1,284 +1,194 @@
-/* Contact form: validation, AJAX submit, char counter, IndexedDB drafts. */
+/**
+ * T&N Handyman — contact-form.js
+ * AJAX submission to Formspree, client-side validation, honeypot +
+ * time-trap spam protection, character counter, and IndexedDB drafts.
+ * Draft persistence lives in /js/draft-store.mjs.
+ */
 
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/moejqzon';
+const FORM_LOAD_TIME = Date.now();
+const MIN_FILL_MS = 3000; // time-trap: bots submit instantly
+
+const form = document.getElementById('contact-form');
+const statusBox = document.getElementById('form-status');
+const submitBtn = document.getElementById('submit-btn');
+const draftStatus = document.getElementById('draft-status');
+
+const setError = (id, message) => {
+    const el = document.getElementById(`${id}-error`);
+    const group = document.getElementById(id)?.closest('.form-group');
+    if (el) el.textContent = message || '';
+    group?.classList.toggle('has-error', Boolean(message));
+};
+
+const validators = {
+    name: (v) =>
+        v.trim().length >= 2 ? '' : 'Please enter your name.',
+    _replyto: (v) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? '' : 'Please enter a valid email address.',
+    phone: (v) =>
+        v.trim() === '' || /^[+\d][\d\s().-]{6,19}$/.test(v.trim())
+            ? ''
+            : 'That phone number looks off.',
+    service: (v) =>
+        v !== '' ? '' : 'Please choose a service.',
+    message: (v) =>
+        v.trim().length >= 10 ? '' : 'Please describe the job (at least 10 characters).'
+};
+
+const runValidation = () => {
+    let firstInvalid = null;
+    for (const [id, validate] of Object.entries(validators)) {
+        const field = document.getElementById(id);
+        if (!field) continue;
+        const msg = validate(field.value);
+        setError(id, msg);
+        if (msg && !firstInvalid) firstInvalid = field;
+    }
+    return firstInvalid;
+};
+
+// ---- Character counter ----
+const messageField = document.getElementById('message');
+const counter = document.getElementById('message-counter');
+const MAX_MSG = Number(messageField.getAttribute('maxlength'));
+
+const updateCounter = () => {
+    const len = messageField.value.length;
+    counter.textContent = `${len} / ${MAX_MSG}`;
+    counter.classList.toggle('near-limit', len > MAX_MSG * 0.9);
+};
+messageField.addEventListener('input', updateCounter);
+updateCounter();
+
+// ---- IndexedDB drafts ----
+const DRAFT_KEY = 'contact-draft';
+const draftFields = ['name', '_replyto', 'phone', 'service', 'message'];
 let draftStore = null;
 
-async function initDraftStore() {
+const setDraftStatus = (text) => {
+    if (draftStatus) draftStatus.textContent = text;
+};
+
+const loadDraft = async () => {
     try {
-        // Dynamic import keeps the no-IDB path working entirely offline
-        // even if the module fails to load for any reason.
-        draftStore = await
-        import ('./draft-store.mjs');
-    } catch (err) {
-        draftStore = null; // Drafts silently disabled
-    }
-}
+        const mod = await import('/js/draft-store.mjs');
+        draftStore = mod;
+        const draft = await draftStore.getDraft(DRAFT_KEY);
+        if (!draft) return;
 
-(async() => {
-    'use strict';
-
-    const form = document.getElementById('contact-form');
-    if (!form) return;
-
-    // ---- Field references ----
-    const fields = {
-        name: document.getElementById('name'),
-        email: document.getElementById('email'),
-        phone: document.getElementById('phone'),
-        serviceType: document.getElementById('service-type'),
-        message: document.getElementById('message'),
-    };
-    const submitBtn = document.getElementById('submit-btn');
-    const statusEl = document.getElementById('form-status');
-    const draftStatusEl = document.getElementById('draft-status');
-    const counterEl = document.getElementById('char-counter');
-    const startTime = Date.now();
-    document.getElementById('form-started-at').value = startTime;
-
-    const MIN_FILL_SECONDS = 3;
-    const MESSAGE_MAX = parseInt(fields.message.getAttribute('maxlength'), 10) || 2000;
-
-    // ---- Character counter ----
-    function updateCounter() {
-        counterEl.textContent =
-            `${fields.message.value.length} / ${MESSAGE_MAX} characters`;
-        counterEl.classList.toggle('near-limit',
-            fields.message.value.length >= MESSAGE_MAX * 0.9);
-    }
-    fields.message.addEventListener('input', updateCounter);
-    updateCounter();
-
-    // ---- Draft autosave ----
-    const DRAFT_FIELDS = ['name', 'email', 'phone', 'serviceType', 'message'];
-
-    function collectDraft() {
-        const data = {};
-        DRAFT_FIELDS.forEach((key) => {
-            if (fields[key]) data[key] = fields[key].value;
+        const hasContent = draftFields.some((id) => {
+            const field = document.getElementById(id);
+            return field && draft[id] && draft[id].trim() !== '';
         });
-        return data;
-    }
+        if (!hasContent) return;
 
-    function draftIsEmpty(data) {
-        return DRAFT_FIELDS.every((key) =>
-            !data[key] || String(data[key]).trim() === '');
-    }
-
-    function applyDraft(data) {
-        DRAFT_FIELDS.forEach((key) => {
-            if (fields[key] && data[key] !== undefined) {
-                fields[key].value = data[key];
-            }
-        });
-        updateCounter();
-    }
-
-    let saveTimer = null;
-
-    function scheduleAutosave() {
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(async() => {
-            if (!draftStore) return;
-            const data = collectDraft();
-            if (draftIsEmpty(data)) return;
-            try {
-                await draftStore.saveDraft(data);
-                draftStatusEl.textContent = 'Draft saved.';
-                setTimeout(() => {
-                    if (draftStatusEl.textContent === 'Draft saved.') {
-                        draftStatusEl.textContent = '';
-                    }
-                }, 2500);
-            } catch (err) {
-                // Storage quota or private-browsing failure — stay silent.
-                // Losing a draft is never worth alarming the user over.
-            }
-        }, 800); // debounce keystrokes
-    }
-
-    DRAFT_FIELDS.forEach((key) => {
-        if (fields[key]) fields[key].addEventListener('input', scheduleAutosave);
-    });
-    fields.serviceType.addEventListener('change', scheduleAutosave);
-
-    // ---- Restore on load (with user consent) ----
-    await initDraftStore();
-    if (draftStore) {
-        let draft = null;
-        try {
-            draft = await draftStore.loadDraft();
-        } catch (err) {
-            draft = null;
-        }
-
-        if (draft && draft.data && !draftIsEmpty(draft.data)) {
-            // Restore immediately so the user sees their text right away,
-            // but frame it as an offer so they're never confused about origin.
-            applyDraft(draft.data);
-            const offer = document.createElement('p');
-            offer.className = 'draft-restore';
-            offer.textContent =
-                'We restored your unsent message from a previous visit. ';
-            const keep = document.createElement('button');
-            keep.type = 'button';
-            keep.className = 'link-btn';
-            keep.textContent = 'Keep it';
-            const discard = document.createElement('button');
-            discard.type = 'button';
-            discard.className = 'link-btn';
-            discard.textContent = 'Discard';
-            keep.addEventListener('click', () => {
-                offer.remove();
-                scheduleAutosave();
+        setDraftStatus('A saved draft was found.');
+        const restore = document.createElement('button');
+        restore.type = 'button';
+        restore.className = 'link-btn';
+        restore.textContent = 'Restore draft?';
+        restore.addEventListener('click', () => {
+            draftFields.forEach((id) => {
+                const field = document.getElementById(id);
+                if (field && draft[id] != null) field.value = draft[id];
             });
-            discard.addEventListener('click', async() => {
-                offer.remove();
-                form.reset();
-                updateCounter();
-                try {
-                    await draftStore.clearDraft();
-                } catch (err) { /* non-fatal */ }
-                draftStatusEl.textContent = '';
-            });
-            offer.append(keep, ' · ', discard);
-            form.prepend(offer);
-        }
-    }
-
-    // ---- Validation (unchanged from previous version) ----
-    const validators = {
-        name(value) {
-            if (!value.trim()) return 'Please enter your name.';
-            return '';
-        },
-        email(value) {
-            if (!value.trim()) return 'Please enter your email address.';
-            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-            return ok ? '' : 'Please enter a valid email address.';
-        },
-        phone(value) {
-            if (!value.trim()) return '';
-            const ok = /^[+()\-.\s\d]{7,20}$/.test(value.trim());
-            return ok ? '' : 'Please enter a valid phone number.';
-        },
-        message(value) {
-            if (!value.trim()) return 'Please tell us what you need done.';
-            if (value.trim().length < 10) return 'Please add a little more detail.';
-            return '';
-        },
-    };
-
-    function showError(field, message) {
-        const el = document.getElementById(`${field.id}-error`);
-        if (el) el.textContent = message;
-        field.setAttribute('aria-invalid', message ? 'true' : 'false');
-        field.closest('.form-group').classList.toggle('has-error', Boolean(message));
-    }
-
-    function validateField(field) {
-        const validator = validators[field.id];
-        if (!validator) return true;
-        const error = validator(field.value);
-        showError(field, error);
-        return !error;
-    }
-
-    function validateAll() {
-        let allValid = true;
-        let firstInvalid = null;
-        Object.values(fields).forEach((field) => {
-            if (!validators[field.id]) return;
-            if (!validateField(field) && !firstInvalid) {
-                firstInvalid = field;
-                allValid = false;
-            }
-        });
-        if (firstInvalid) firstInvalid.focus();
-        return allValid;
-    }
-
-    Object.values(fields).forEach((field) => {
-        if (!validators[field.id]) return;
-        field.addEventListener('blur', () => validateField(field));
-        field.addEventListener('input', () => {
-            if (field.closest('.form-group').classList.contains('has-error')) {
-                validateField(field);
-            }
-        });
-    });
-
-    // ---- Status messages ----
-    function setStatus(type, text) {
-        statusEl.className = `form-status ${type}`;
-        statusEl.textContent = text;
-    }
-
-    function clearStatus() {
-        statusEl.className = 'form-status';
-        statusEl.textContent = '';
-    }
-
-    // ---- Spam checks ----
-    function failsSpamChecks() {
-        const honeypot = document.getElementById('company');
-        if (honeypot && honeypot.value.trim() !== '') return true;
-        if ((Date.now() - startTime) / 1000 < MIN_FILL_SECONDS) return true;
-        return false;
-    }
-
-    // ---- Submission ----
-    form.addEventListener('submit', async(event) => {
-        event.preventDefault();
-
-        if (failsSpamChecks()) {
-            setStatus('success', 'Thanks! Your message has been sent.');
-            form.reset();
-            if (draftStore) await draftStore.clearDraft().catch(() => {});
             updateCounter();
-            return;
-        }
+            setDraftStatus('Draft restored.');
+        });
+        draftStatus.appendChild(document.createTextNode(' '));
+        draftStatus.appendChild(restore);
+    } catch {
+        // IndexedDB unavailable — drafts silently disabled
+    }
+};
 
-        if (!validateAll()) return;
-
-        const fd = new FormData(form);
-        fd.set('form_duration_seconds', Math.round((Date.now() - startTime) / 1000));
-
-        submitBtn.disabled = true;
-        const originalLabel = submitBtn.textContent;
-        submitBtn.textContent = 'Sending…';
-        clearStatus();
-
+let draftTimer = null;
+form.addEventListener('input', () => {
+    if (!draftStore) return;
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(async () => {
+        const draft = {};
+        draftFields.forEach((id) => {
+            const field = document.getElementById(id);
+            if (field) draft[id] = field.value;
+        });
         try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: fd,
-                headers: {
-                    'Accept': 'application/json'
-                },
-            });
+            await draftStore.saveDraft(DRAFT_KEY, draft);
+        } catch { /* ignore */ }
+    }, 1000);
+});
 
-            if (response.ok) {
-                setStatus('success',
-                    'Thanks! Your message has been sent. We\u2019ll get back to you shortly.');
-                form.reset();
-                updateCounter();
-                if (draftStore) await draftStore.clearDraft().catch(() => {});
-                draftStatusEl.textContent = '';
-            } else {
-                const data = await response.json().catch(() => null);
-                const detail = data && Array.isArray(data.errors) && data.errors[0] ?
-                    data.errors[0].message : '';
-                setStatus('error',
-                    `Sorry, something went wrong sending your message.${detail ? ' ' + detail : ''} ` +
-                    'Please try again, or call us at (603) 359\u20118272.');
-            }
-        } catch (err) {
-            setStatus('error',
-                'No internet connection detected. Your message wasn\u2019t sent — ' +
-                'but your draft is saved locally, so you can try again once you\u2019re back online, ' +
-                'or call (603) 359\u20118272.');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalLabel;
-        }
+const clearDraft = async () => {
+    try {
+        await draftStore?.deleteDraft(DRAFT_KEY);
+    } catch { /* ignore */ }
+};
+
+loadDraft();
+
+// ---- Submit ----
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    // Spam checks happen before any validation noise
+    const honeypot = document.getElementById('company');
+    if (honeypot && honeypot.value !== '') return; // silently drop bots
+
+    if (Date.now() - FORM_LOAD_TIME < MIN_FILL_MS) {
+        statusBox.className = 'form-status error';
+        statusBox.textContent = 'Please take a moment to complete the form.';
+        return;
+    }
+
+    const firstInvalid = runValidation();
+    if (firstInvalid) {
+        firstInvalid.focus();
+        return;
+    }
+
+    const payload = {};
+    draftFields.forEach((id) => {
+        const field = document.getElementById(id);
+        if (field) payload[id] = field.value;
     });
-})();
+
+    submitBtn.disabled = true;
+    statusBox.className = 'form-status';
+    statusBox.textContent = '';
+
+    try {
+        const response = await fetch(FORMSPREE_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            statusBox.className = 'form-status success';
+            statusBox.textContent =
+                "Thanks! Your message is on its way — we'll get back to you shortly.";
+            form.reset();
+            updateCounter();
+            clearDraft();
+        } else if (response.status === 400 || response.status === 422) {
+            const data = await response.json().catch(() => null);
+            statusBox.className = 'form-status error';
+            statusBox.textContent =
+                data?.errors?.map((e) => e.message).join(' ') ||
+                'Some fields need attention — please review and try again.';
+            runValidation();
+        } else {
+            throw new Error(`Formspree responded ${response.status}`);
+        }
+    } catch {
+        statusBox.className = 'form-status error';
+        statusBox.textContent =
+            'Something went wrong sending your message. Please try again, or call/text (603) 359-8272.';
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
