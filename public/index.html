@@ -1,238 +1,252 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <title>T&N Handyman — Local Home Services</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Reliable handyman services across the Upper Valley: yard work, tree trimming, painting, carpentry, and small repairs. Fully insured LLC.">
-  <meta name="color-scheme" content="light dark">
-  <link rel="canonical" href="https://tn-handyman.pages.dev">
-  <link href="/css/style.css" rel="stylesheet" crossorigin="anonymous">
-  <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-light.svg" media="(prefers-color-scheme: light)">
-  <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-dark.svg" media="(prefers-color-scheme: dark)">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/png/apple-touch-icon.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
-  <meta name="theme-color" content="#54428e" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
-  <meta property="og:title" content="T&N Handyman — Local Home Services">
-  <meta property="og:description" content="Reliable handyman services across the Upper Valley.">
-  <meta property="og:image" content="/images/png/social-share.png">
-  <meta property="og:url" content="https://tn-handyman.pages.dev">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="T&N Handyman — Local Home Services">
-  <meta name="twitter:description" content="Reliable handyman services across the Upper Valley.">
-  <meta name="twitter:image" content="/images/png/social-share.png">
-  <script src="/js/main.js" defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <title>T&amp;N Handyman — Local Home Services</title>
+    <meta name="description" content="Reliable handyman services across the Upper Valley: yard work, tree trimming, painting, carpentry, and small repairs. Fully insured LLC.">
+    <link rel="canonical" href="https://tn-handyman.pages.dev">
+
+    <!-- Styles -->
+    <link href="/css/style.css" rel="stylesheet" crossorigin="anonymous">
+
+    <!-- Favicons & PWA -->
+    <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-light.svg" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/svg+xml" href="/images/svg/favicon-dark.svg" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/png/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#54428e" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+
+    <!-- Social sharing (Open Graph / Twitter) -->
+    <meta property="og:title" content="T&amp;N Handyman — Local Home Services">
+    <meta property="og:description" content="Reliable handyman services across the Upper Valley.">
+    <meta property="og:image" content="/images/png/social-share.png">
+    <meta property="og:url" content="https://tn-handyman.pages.dev">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="T&amp;N Handyman — Local Home Services">
+    <meta name="twitter:description" content="Reliable handyman services across the Upper Valley.">
+    <meta name="twitter:image" content="/images/png/social-share.png">
+
+    <!-- SEO extras -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+    <!-- Scripts -->
+    <script src="/js/main.js" defer></script>
 </head>
+
 <body>
-  <header class="site-header" id="top">
-    <div class="container header-inner">
-      <a href="/" class="logo" aria-label="T&N Handyman home">
-        <img src="/images/svg/logo.svg" alt="T&N Handyman logo">
-      </a>
-      <button class="nav-toggle" aria-controls="primary-nav" aria-expanded="false" aria-label="Toggle navigation">
+    <header class="site-header" id="top">
+        <div class="container header-inner">
+            <a href="/" class="logo" aria-label="T&N Handyman home">
+                <img src="/images/svg/logo.svg" alt="T&N Handyman logo">
+            </a>
+            <button class="nav-toggle" aria-controls="primary-nav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="hamburger"></span>
       </button>
-      <nav id="primary-nav" class="primary-nav" aria-labelledby="nav-heading">
-        <h2 id="nav-heading" class="visually-hidden">Main navigation</h2>
-        <ul>
-          <li><a href="#services">Services</a></li>
-          <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#testimonials">Reviews</a></li>
-          <li><a href="#recent-work">Recent work</a></li>
-          <li><a href="/contact">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <!-- Welcome modal (shown on first visit per session via JS) -->
-    <dialog id="welcome-modal" class="modal">
-      <form method="dialog" class="modal-content">
-        <header class="modal-header">
-          <span class="badge">New Local Business</span>
-          <button type="button" class="close-btn" aria-label="Close">&times;</button>
-        </header>
-        <div class="modal-body">
-          <h1>Welcome to T&N Handyman!</h1>
-          <p>From owners <strong>Nathan &amp; Tonya</strong> and crew lead <strong>Kaiden</strong>. Customer satisfaction comes first, and we do the job right the first time.</p>
-          <ul class="service-list">
-            <li><span class="check">✓</span> Fall cleanup and yard work</li>
-            <li><span class="check">✓</span> Tree trimming and removal</li>
-            <li><span class="check">✓</span> Painting, priming, and carpentry</li>
-            <li><span class="check">✓</span> Leaky faucets, sticking doors, small repairs</li>
-          </ul>
-          <div class="trust-note">
-            <span class="shield">🛡</span> Fully insured LLC. Peace of mind while we work on your property.
-          </div>
-          <p class="closing-msg"><strong>We always show up.</strong> Thank you for supporting local!</p>
-          <div class="modal-actions">
-            <a href="tel:+16033598272" class="btn btn-primary">📞 Call or Text (603) 359-8272</a>
-            <button type="submit" value="browse" class="btn btn-outline">Browse the Site →</button>
-          </div>
+            <nav id="primary-nav" class="primary-nav" aria-labelledby="nav-heading">
+                <h2 id="nav-heading" class="visually-hidden">Main navigation</h2>
+                <ul>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#how-it-works">How it works</a></li>
+                    <li><a href="#testimonials">Reviews</a></li>
+                    <li><a href="#recent-work">Recent work</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-      </form>
-    </dialog>
+    </header>
 
-    <!-- Services showcase -->
-    <section id="services" class="section services">
-      <div class="container">
-        <h2>Our Services</h2>
-        <div class="service-cards">
-          <article class="card">
-            <h3>Garage Door Repair</h3>
-            <div class="before-after">
-              <figure>
-                <img src="/images/before-1.jpg" alt="Overgrown yard before clearing">
-                <span class="label before">Before</span>
-              </figure>
-              <figure>
-                <img src="/images/after-1.jpg" alt="Cleaned garden bed after work">
-                <span class="label after">After</span>
-              </figure>
+    <main>
+        <!-- Welcome modal (shown on first visit per session via JS) -->
+        <dialog id="welcome-modal" class="modal">
+            <form method="dialog" class="modal-content">
+                <header class="modal-header">
+                    <span class="badge">New Local Business</span>
+                    <button type="button" class="close-btn" aria-label="Close">&times;</button>
+                </header>
+                <div class="modal-body">
+                    <h1>Welcome to T&N Handyman!</h1>
+                    <p>From owners <strong>Nathan &amp; Tonya</strong> and crew lead <strong>Kaiden</strong>. Customer satisfaction comes first, and we do the job right the first time.</p>
+                    <ul class="service-list">
+                        <li><span class="check">✓</span> Fall cleanup and yard work</li>
+                        <li><span class="check">✓</span> Tree trimming and removal</li>
+                        <li><span class="check">✓</span> Painting, priming, and carpentry</li>
+                        <li><span class="check">✓</span> Leaky faucets, sticking doors, small repairs</li>
+                    </ul>
+                    <div class="trust-note">
+                        <span class="shield">🛡</span> Fully insured LLC. Peace of mind while we work on your property.
+                    </div>
+                    <p class="closing-msg"><strong>We always show up.</strong> Thank you for supporting local!</p>
+                    <div class="modal-actions">
+                        <a href="tel:+16033598272" class="btn btn-primary">📞 Call or Text (603) 359-8272</a>
+                        <button type="submit" value="browse" class="btn btn-outline">Browse the Site →</button>
+                    </div>
+                </div>
+            </form>
+        </dialog>
+
+        <!-- Services showcase -->
+        <section id="services" class="section services">
+            <div class="container">
+                <h2>Our Services</h2>
+                <div class="service-cards">
+                    <article class="card">
+                        <h3>Garage Door Repair</h3>
+                        <div class="before-after">
+                            <figure>
+                                <img src="/images/before-1.jpg" alt="Overgrown yard before clearing">
+                                <span class="label before">Before</span>
+                            </figure>
+                            <figure>
+                                <img src="/images/after-1.jpg" alt="Cleaned garden bed after work">
+                                <span class="label after">After</span>
+                            </figure>
+                        </div>
+                        <p class="card-footer">✓ Overgrowth Clearing &amp; Garden Bed</p>
+                    </article>
+                    <!-- Add more service cards as needed -->
+                </div>
+                <p class="cta-block">
+                    Want work like this on your property? <a href="/contact">Get a free estimate</a> →
+                </p>
             </div>
-            <p class="card-footer">✓ Overgrowth Clearing &amp; Garden Bed</p>
-          </article>
-          <!-- Add more service cards as needed -->
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works" class="section how-it-works">
+            <div class="container">
+                <h2>How it works</h2>
+                <ol class="steps">
+                    <li class="step">
+                        <span class="step-num">01</span>
+                        <h3>Send us a message</h3>
+                        <p>Tell us what needs doing. Landscaping, tree work, painting, or a carpentry project, and we'll get back to you fast.</p>
+                    </li>
+                    <li class="step">
+                        <span class="step-num">02</span>
+                        <h3>We provide a quote</h3>
+                        <p>You'll receive a clear, upfront estimate with no surprises.</p>
+                    </li>
+                    <li class="step">
+                        <span class="step-num">03</span>
+                        <h3>We show up and get it done</h3>
+                        <p>Professional, punctual, and thorough — every time.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section id="testimonials" class="section testimonials">
+            <div class="container">
+                <hgroup>
+                    <p class="eyebrow">Recommended Locally</p>
+                    <h2>What our customers say</h2>
+                    <p>Real recommendations from real neighbors across the Upper Valley.</p>
+                </hgroup>
+
+                <div class="testimonial-carousel" role="region" aria-label="Customer testimonials">
+                    <div class="carousel-track">
+                        <article class="testimonial-card">
+                            <div class="reviewer">
+                                <span class="avatar" aria-hidden="true">L</span>
+                                <div>
+                                    <strong>Loretta G.</strong>
+                                    <span class="badge">✓ Recommends T&amp;N Handyman</span>
+                                </div>
+                            </div>
+                            <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
+                            <p>"Nate and Caiden do a great job. They are courteous and great communicators in addition to being very willing to listen to what you need and do what they can to accommodate you."</p>
+                        </article>
+
+                        <article class="testimonial-card">
+                            <div class="reviewer">
+                                <span class="avatar" aria-hidden="true">T</span>
+                                <div>
+                                    <strong>Therese P.</strong>
+                                    <span class="badge">✓ Recommends T&amp;N Handyman</span>
+                                </div>
+                            </div>
+                            <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
+                            <p>"Nate has done a great job on my yard. Caden came last time and got my front yard looking great! Having them back to help me get things under control. Very easy to work with. Highly recommend."</p>
+                        </article>
+
+                        <article class="testimonial-card">
+                            <div class="reviewer">
+                                <span class="avatar" aria-hidden="true">K</span>
+                                <div>
+                                    <strong>Kristen W.</strong>
+                                    <span class="badge">✓ Recommends T&amp;N Handyman</span>
+                                </div>
+                            </div>
+                            <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
+                            <p>"Nate does an excellent job! He is punctual, thorough and goes the extra mile to make things nice. Great attention to detail. I highly recommend."</p>
+                        </article>
+
+                        <article class="testimonial-card">
+                            <div class="reviewer">
+                                <span class="avatar" aria-hidden="true">D</span>
+                                <div>
+                                    <strong>Don L.</strong>
+                                    <span class="badge">✓ Recommends T&amp;N Handyman</span>
+                                </div>
+                            </div>
+                            <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
+                            <p>"Our garage door essentially broke in half horizontally while closing it. I was fortunate to discover T&amp;N. They did all they could to repair it ASAP at a good price, both for parts and labor. We can now leave the house again. Thank you!"</p>
+                        </article>
+                    </div>
+
+                    <div class="carousel-controls">
+                        <button class="carousel-btn prev" aria-label="Previous testimonial">‹</button>
+                        <button class="carousel-btn next" aria-label="Next testimonial">›</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent work -->
+        <section id="recent-work" class="section recent-work">
+            <div class="container">
+                <hgroup>
+                    <p class="eyebrow">On the Job</p>
+                    <h2>Recent work</h2>
+                    <p>A look at the jobs we have been out on across the Upper Valley.</p>
+                </hgroup>
+                <div class="gallery">
+                    <!-- Add gallery items here -->
+                    <figure>
+                        <img src="/images/work-1.jpg" alt="Landscaping project example">
+                        <figcaption>Front yard transformation</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="/images/work-2.jpg" alt="Painting project example">
+                        <figcaption>Interior trim painting</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="/images/work-3.jpg" alt="Carpentry project example">
+                        <figcaption>Custom shelving installation</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 T&amp;N Handyman. All rights reserved.</p>
+            <p>Fully insured LLC. Serving the Upper Valley.</p>
+            <nav aria-label="Footer navigation">
+                <ul>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-        <p class="cta-block">
-          Want work like this on your property? <a href="/contact">Get a free estimate</a> →
-        </p>
-      </div>
-    </section>
-
-    <!-- How it works -->
-    <section id="how-it-works" class="section how-it-works">
-      <div class="container">
-        <h2>How it works</h2>
-        <ol class="steps">
-          <li class="step">
-            <span class="step-num">01</span>
-            <h3>Send us a message</h3>
-            <p>Tell us what needs doing. Landscaping, tree work, painting, or a carpentry project, and we'll get back to you fast.</p>
-          </li>
-          <li class="step">
-            <span class="step-num">02</span>
-            <h3>We provide a quote</h3>
-            <p>You'll receive a clear, upfront estimate with no surprises.</p>
-          </li>
-          <li class="step">
-            <span class="step-num">03</span>
-            <h3>We show up and get it done</h3>
-            <p>Professional, punctual, and thorough — every time.</p>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section id="testimonials" class="section testimonials">
-      <div class="container">
-        <hgroup>
-          <p class="eyebrow">Recommended Locally</p>
-          <h2>What our customers say</h2>
-          <p>Real recommendations from real neighbors across the Upper Valley.</p>
-        </hgroup>
-
-        <div class="testimonial-carousel" role="region" aria-label="Customer testimonials">
-          <div class="carousel-track">
-            <article class="testimonial-card">
-              <div class="reviewer">
-                <span class="avatar" aria-hidden="true">L</span>
-                <div>
-                  <strong>Loretta G.</strong>
-                  <span class="badge">✓ Recommends T&amp;N Handyman</span>
-                </div>
-              </div>
-              <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>"Nate and Caiden do a great job. They are courteous and great communicators in addition to being very willing to listen to what you need and do what they can to accommodate you."</p>
-            </article>
-
-            <article class="testimonial-card">
-              <div class="reviewer">
-                <span class="avatar" aria-hidden="true">T</span>
-                <div>
-                  <strong>Therese P.</strong>
-                  <span class="badge">✓ Recommends T&amp;N Handyman</span>
-                </div>
-              </div>
-              <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>"Nate has done a great job on my yard. Caden came last time and got my front yard looking great! Having them back to help me get things under control. Very easy to work with. Highly recommend."</p>
-            </article>
-
-            <article class="testimonial-card">
-              <div class="reviewer">
-                <span class="avatar" aria-hidden="true">K</span>
-                <div>
-                  <strong>Kristen W.</strong>
-                  <span class="badge">✓ Recommends T&amp;N Handyman</span>
-                </div>
-              </div>
-              <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>"Nate does an excellent job! He is punctual, thorough and goes the extra mile to make things nice. Great attention to detail. I highly recommend."</p>
-            </article>
-
-            <article class="testimonial-card">
-              <div class="reviewer">
-                <span class="avatar" aria-hidden="true">D</span>
-                <div>
-                  <strong>Don L.</strong>
-                  <span class="badge">✓ Recommends T&amp;N Handyman</span>
-                </div>
-              </div>
-              <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>"Our garage door essentially broke in half horizontally while closing it. I was fortunate to discover T&amp;N. They did all they could to repair it ASAP at a good price, both for parts and labor. We can now leave the house again. Thank you!"</p>
-            </article>
-          </div>
-
-          <div class="carousel-controls">
-            <button class="carousel-btn prev" aria-label="Previous testimonial">‹</button>
-            <button class="carousel-btn next" aria-label="Next testimonial">›</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Recent work -->
-    <section id="recent-work" class="section recent-work">
-      <div class="container">
-        <hgroup>
-          <p class="eyebrow">On the Job</p>
-          <h2>Recent work</h2>
-          <p>A look at the jobs we have been out on across the Upper Valley.</p>
-        </hgroup>
-        <div class="gallery">
-          <!-- Add gallery items here -->
-          <figure>
-            <img src="/images/work-1.jpg" alt="Landscaping project example">
-            <figcaption>Front yard transformation</figcaption>
-          </figure>
-          <figure>
-            <img src="/images/work-2.jpg" alt="Painting project example">
-            <figcaption>Interior trim painting</figcaption>
-          </figure>
-          <figure>
-            <img src="/images/work-3.jpg" alt="Carpentry project example">
-            <figcaption>Custom shelving installation</figcaption>
-          </figure>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; 2026 T&amp;N Handyman. All rights reserved.</p>
-      <p>Fully insured LLC. Serving the Upper Valley.</p>
-      <nav aria-label="Footer navigation">
-        <ul>
-          <li><a href="/contact">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </footer>
+    </footer>
 </body>
+
 </html>
