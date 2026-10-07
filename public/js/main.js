@@ -1,7 +1,7 @@
 /**
  * T&N Handyman — main.js
  * Mobile nav toggle, welcome modal, testimonial carousel,
- * and Service Worker registration.
+ * before/after swipe sliders, and Service Worker registration.
  * Contact form interactivity lives in /js/contact-form.js (contact page only).
  */
 
@@ -93,6 +93,58 @@
             });
         });
     }
+
+    // ---- Before/After swipe sliders ----
+    const sliders = document.querySelectorAll('.ba-slider');
+
+    sliders.forEach((slider) => {
+        const handle = slider.querySelector('.ba-handle');
+        const afterImg = slider.querySelector('.img-after');
+        let isDragging = false;
+
+        const setPos = (percent) => {
+            const pos = Math.max(0, Math.min(100, percent));
+            handle.style.left = `${pos}%`;
+            afterImg.style.clipPath = `inset(0 ${100 - pos}% 0 0)`;
+            slider.setAttribute('aria-valuenow', String(Math.round(pos)));
+        };
+
+        const posFromX = (x) => {
+            const rect = slider.getBoundingClientRect();
+            return ((x - rect.left) / rect.width) *100;
+        };
+
+        const startDrag = () => {
+            isDragging = true;
+        };
+        const endDrag = () => {
+            isDragging = false;
+        };
+
+        // Initialize the split at 50%
+        setPos(50);
+
+        // Pointer events cover mouse, touch, and stylus in one API
+        slider.addEventListener('pointerdown', (e) => {
+            startDrag();
+            setPos(posFromX(e.clientX));
+            slider.setPointerCapture(e.pointerId);
+        });
+        slider.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            setPos(posFromX(e.clientX));
+        });
+        slider.addEventListener('pointerup', endDrag);
+        slider.addEventListener('pointercancel', endDrag);
+
+        // Keyboard accessibility: arrow keys scrub the comparison
+        slider.tabIndex = 0;
+        slider.addEventListener('keydown', (e) => {
+            const current = parseFloat(handle.style.left) || 50;
+            if (e.key === 'ArrowLeft') { setPos(current - 5); e.preventDefault(); }
+            if (e.key === 'ArrowRight') { setPos(current + 5); e.preventDefault(); }
+        });
+    });
 
     // ---- Service Worker registration ----
     if ('serviceWorker' in navigator) {
