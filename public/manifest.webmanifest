@@ -13,9 +13,8 @@
   "theme_color": "#54428e",
   "prefer_related_applications": false,
   "categories": [
-    "home",
-    "utilities",
-    "business"
+    "business",
+    "utility"
   ],
   "icons": [
     {
@@ -43,31 +42,13 @@
       "purpose": "maskable"
     },
     {
-      "src": "/images/png/favicon-light-192.png",
+      "src": "/images/png/favicon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/png/favicon-light-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/images/png/favicon-dark-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/images/png/favicon-dark-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon.png",
+      "src": "/images/png/favicon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -100,6 +81,45 @@
       "short_name": "Services",
       "description": "Browse T&N Handyman services",
       "url": "/services",
+      "icons": [
+        {
+          "src": "/images/png/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "How it Works",
+      "short_name": "How It Works",
+      "description": "How it works",
+      "url": "/#how-it-works",
+      "icons": [
+        {
+          "src": "/images/png/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "short_name": "Reviews",
+      "description": "What our customers say",
+      "url": "/#reviews",
+      "icons": [
+        {
+          "src": "/images/png/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Recent Work",
+      "short_name": "Recent Work",
+      "description": "A look at the jobs we have been out on across the Upper Valley",
+      "url": "/#recent-work",
       "icons": [
         {
           "src": "/images/png/icon-192.png",
