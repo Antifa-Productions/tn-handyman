@@ -35,6 +35,7 @@
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
     --safe-area-inset-left: env(safe-area-inset-left, 0);
 }
+
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-light: #1a1a1a;
@@ -270,15 +271,13 @@ a:hover {
 .ba-slider {
     position: relative;
     width: 100%;
-    aspect-ratio: 4/3;
-    /* Adjust per photo orientation if needed */
+    aspect-ratio: 4/3; /* Adjust per photo orientation if needed */
     margin-top: var(--space-xs);
     background: #ddd;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: none;
-    /* Prevents page scroll while dragging */
+    touch-action: none; /* Prevents page scroll while dragging */
     cursor: ew-resize;
 }
 .ba-slider:focus-visible {
@@ -321,8 +320,7 @@ a:hover {
     place-items: center;
     color: #fff;
     font-size: 1.25rem;
-    pointer-events: none;
-    /* The slider tracks the pointer; the handle is visual only */
+    pointer-events: none; /* The slider tracks the pointer; the handle is visual only */
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 .ba-handle::before {
@@ -546,7 +544,8 @@ a:hover {
     margin-top: var(--space-sm);
 }
 
-/* Modal */
+/* Modal — sized to the visible viewport and inset away from the
+   notch / home indicator so it renders correctly in standalone mode. */
 .modal {
     border: 0;
     border-radius: var(--radius-lg);
@@ -554,11 +553,11 @@ a:hover {
     width: min(100%, 420px);
     padding: 0;
     background: transparent;
-    overflow: hidden auto;
-    /* allow internal scroll if content is tall */
-    /* Respect safe areas in standalone mode */
+    overflow: hidden auto; /* allow internal scroll if content is tall */
     max-height: calc(100svh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom) - 2 * var(--space-md));
-    margin: calc(var(--safe-area-inset-top) + var(--space-md)) auto calc(var(--safe-area-inset-bottom) + var(--space-md));
+    margin: auto;
+    margin-top: calc(var(--safe-area-inset-top) + var(--space-md));
+    margin-bottom: calc(var(--safe-area-inset-bottom) + var(--space-md));
 }
 .modal::backdrop {
     background: rgba(0,0,0,0.6);
