@@ -92,7 +92,7 @@
       "name": "Services",
       "short_name": "Services",
       "description": "Browse T&N Handyman services",
-      "url": "/services",
+      "url": "/#services",
       "icons": [
         {
           "src": "/images/png/icon-512.png",
