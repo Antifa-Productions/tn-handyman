@@ -9,6 +9,6 @@
     "test": "npm run validate && npm run hash && npm run check"
   },
   "engines": {
-    "node": "^24.21.0"
+    "node": "20"
   }
 }
