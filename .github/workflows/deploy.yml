@@ -89,15 +89,25 @@ jobs:
           wranglerVersion: '4'
           command: deploy
       - name: Post-deploy smoke test
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
         run: |
           sleep 15
           BASE="https://tandnhandymanvt.com"
 
+          # All requests carry the secret token so the WAF skip rule
+          # lets CI traffic through. Token lives in repo secrets,
+          # never in logs.
+          AUTH=("H" "X-CI-Token: ${CI_TOKEN}")
+
+          # Fail fast if the secret wasn't provided
+          test -n "$CI_TOKEN" || { echo "::error::CI_TOKEN secret is not set"; exit 1; }
+
           # --- Asset/MIME checks ---
           check_any() {
             url="$1"; shift
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-            ctype=$(curl -s -o /dev/null -w "%{content_type}" "$url" | cut -d';' -f1)
+            code=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{http_code}" "$url")
+            ctype=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{content_type}" "$url" | cut -d';' -f1)
             echo "$url → $code ($ctype)"
             test "$code" = "200" || { echo "::error::$url returned $code"; exit 1; }
             matched=""
@@ -110,26 +120,26 @@ jobs:
             fi
           }
 
-          check_any "$BASE/"                       "text/html"
-          check_any "$BASE/contact"                "text/html"
-          check_any "$BASE/css/style.css"          "text/css"
-          check_any "$BASE/js/main.js"             "text/javascript" "application/javascript"
-          check_any "$BASE/js/draft-store.mjs"     "text/javascript" "application/javascript"
-          check_any "$BASE/sw.js"                  "text/javascript" "application/javascript"
-          check_any "$BASE/workbox/workbox-sw.js"  "text/javascript" "application/javascript"
-          check_any "$BASE/manifest.webmanifest"   "application/manifest+json" "application/json"
-          check_any "$BASE/sitemap.xml"            "application/xml" "text/xml"
-          check_any "$BASE/sw-precache.json"       "application/json" "text/plain"
+          check_any "$BASE/"                        "text/html"
+          check_any "$BASE/contact"                 "text/html"
+          check_any "$BASE/css/style.css"            "text/css"
+          check_any "$BASE/js/main.js"               "text/javascript" "application/javascript"
+          check_any "$BASE/js/draft-store.mjs"       "text/javascript" "application/javascript"
+          check_any "$BASE/sw.js"                    "text/javascript" "application/javascript"
+          check_any "$BASE/workbox/workbox-sw.js"    "text/javascript" "application/javascript"
+          check_any "$BASE/manifest.webmanifest"     "application/manifest+json" "application/json"
+          check_any "$BASE/sitemap.xml"              "application/xml" "text/xml"
+          check_any "$BASE/sw-precache.json"         "application/json" "text/plain"
 
           # --- Security header assertions ---
           assert_header() {
             url="$1"; header="$2"; pattern="$3"
-            value=$(curl -sI "$url" | tr -d '\r' | awk -v h="$header:" 'tolower($1)==tolower(h){sub(/^[^ ]*[ ]*/,""); print}')
+            value=$(curl -sI "${AUTH[@]}" "$url" | tr -d '\r' | awk -v h="$header:" 'tolower($1)==tolower(h){sub(/^[^ ]*[ ]*/,""); print}')
             echo "$url $header → $value"
             echo "$value" | grep -qi "$pattern" || { echo "::error::$url $header failed: '$value' (expected pattern: $pattern)"; exit 1; }
           }
 
-          assert_header "$BASE/" "Strict-Transport-Security" "max-age=31536000.*includeSubDomains.*preload"
+          assert_header "$BASE/" "Strict-Transport-Security" "max-age=63072000.*includeSubDomains.*preload"
           assert_header "$BASE/" "Content-Security-Policy" "default-src 'self'"
           assert_header "$BASE/" "Content-Security-Policy" "form-action https://formspree.io"
           assert_header "$BASE/" "X-Content-Type-Options" "nosniff"
@@ -139,27 +149,27 @@ jobs:
           assert_header "$BASE/" "Cross-Origin-Resource-Policy" "same-origin"
 
           # Wildcard ACAO must be gone: no Origin sent → no ACAO at all
-          acao=$(curl -sI "$BASE/" | tr -d '\r' | awk 'tolower($1)=="access-control-allow-origin:"{print $2}')
+          acao=$(curl -sI "${AUTH[@]}" "$BASE/" | tr -d '\r' | awk 'tolower($1)=="access-control-allow-origin:"{print $2}')
           test -z "$acao" || { echo "::error::ACAO present without Origin header: $acao"; exit 1; }
 
           # Allowlisted origin echoes back exactly (never *)
-          acao=$(curl -sI -H "Origin: https://www.tandnhandymanvt.com" "$BASE/" \
+          acao=$(curl -sI "${AUTH[@]}" -H "Origin: https://www.tandnhandymanvt.com" "$BASE/" \
                  | tr -d '\r' | awk 'tolower($1)=="access-control-allow-origin:"{sub(/^[^ ]*[ ]*/,""); print}')
           test "$acao" = "https://www.tandnhandymanvt.com" || { echo "::error::ACAO echo wrong: '$acao'"; exit 1; }
 
           # Foreign origin gets nothing
-          acao=$(curl -sI -H "Origin: https://evil.example" "$BASE/" \
+          acao=$(curl -sI "${AUTH[@]}" -H "Origin: https://evil.example" "$BASE/" \
                  | tr -d '\r' | awk 'tolower($1)=="access-control-allow-origin:"{sub(/^[^ ]*[ ]*/,""); print}')
           test -z "$acao" || { echo "::error::ACAO leaked for disallowed origin: $acao"; exit 1; }
 
           # www consolidates to apex via 301
-          code=$(curl -s -o /dev/null -w "%{http_code}" "https://www.tandnhandymanvt.com/")
-          loc=$(curl -sI "https://www.tandnhandymanvt.com/" | tr -d '\r' | awk 'tolower($1)=="location:"{print $2}')
+          code=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{http_code}" "https://www.tandnhandymanvt.com/")
+          loc=$(curl -sI "${AUTH[@]}" "https://www.tandnhandymanvt.com/" | tr -d '\r' | awk 'tolower($1)=="location:"{print $2}')
           echo "www / → $code ($loc)"
           test "$code" = "301" || { echo "::error::www did not redirect: $code"; exit 1; }
           case "$loc" in https://tandnhandymanvt.com/*) ;; *) echo "::error::unexpected redirect target: $loc"; exit 1;; esac
 
           # 404 page works via the worker's not_found_handling
-          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/nonexistent-page-test")
+          code=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{http_code}" "$BASE/nonexistent-page-test")
           echo "/nonexistent-page-test → $code"
           test "$code" = "404" || { echo "::error::expected 404, got $code"; exit 1; }
