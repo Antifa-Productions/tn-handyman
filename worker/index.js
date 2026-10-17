@@ -18,6 +18,7 @@ const CSP = [
     "frame-ancestors 'none'",
     "img-src 'self' data:",
     "manifest-src 'self'",
+    "media-src 'none'",
     "object-src 'none'",
     "script-src 'self' blob:",
     "script-src-attr 'self'",
