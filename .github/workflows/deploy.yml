@@ -42,6 +42,7 @@ jobs:
           node --check public/js/main.js
           node --check public/js/contact-form.js
           node --check public/js/sw-check.js
+          node --check public/js/draft-store.mjs
 
       - name: Verify sw-precache.json exists and is non-empty
         run: |
@@ -98,6 +99,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
           command: deploy
 
       - name: Post-deploy smoke test
@@ -145,7 +147,7 @@ jobs:
           assert_header "$BASE/" "Content-Security-Policy" "default-src 'self'"
           assert_header "$BASE/" "Content-Security-Policy" "form-action https://formspree.io"
           assert_header "$BASE/" "X-Content-Type-Options" "nosniff"
-          assert_header "$BASE/" "Referrer-Policy" "same-origin"
+          assert_header "$BASE/" "Referrer-Policy" "no-referrer"
           assert_header "$BASE/" "Permissions-Policy" "fullscreen=(self)"
           assert_header "$BASE/" "Cross-Origin-Opener-Policy" "same-origin"
           assert_header "$BASE/" "Cross-Origin-Resource-Policy" "same-origin"
@@ -162,7 +164,7 @@ jobs:
           # Foreign origin gets nothing
           acao=$(curl -sI -H "Origin: https://evil.example" "$BASE/" \
                  | tr -d '\r' | awk 'tolower($1)=="access-control-allow-origin:"{sub(/^[^ ]*[ ]*/,""); print}')
-          test -z "$acao" || { echo "::error::ACAO leaked for disallowed origin: '$acao'"; exit 1; }
+          test -z "$acao" || { echo "::error::ACAO leaked for disallowed origin: $acao"; exit 1; }
 
           # www consolidates to apex via 301
           code=$(curl -s -o /dev/null -w "%{http_code}" "https://www.tandnhandymanvt.com/")
