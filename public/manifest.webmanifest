@@ -2,7 +2,7 @@
   "name": "T&N Handyman",
   "short_name": "T&N",
   "description": "Reliable handyman services across the Upper Valley: yard work, tree trimming, painting, carpentry, and small repairs. Fully insured LLC.",
-  "id": "https://tn-handyman.pages.dev",
+  "id": "https://tandnhandymanvt.com/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -118,7 +118,7 @@
       "name": "Reviews",
       "short_name": "Reviews",
       "description": "What our customers say",
-      "url": "/#reviews",
+      "url": "/#testimonials",
       "icons": [
         {
           "src": "/images/png/icon-512.png",
