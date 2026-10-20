@@ -1,12 +1,12 @@
 /**
  * T&N Handyman - consolidated Worker.
  * Static assets + security headers + dynamic CORS + www consolidation
- * + nonce-based CSP so Cloudflare's edge-injected scripts/styles are authorized.
+ * + nonce-based CSP for scripts only (Cloudflare edge-injected scripts).
  *
- * Nonces now cover BOTH script-src and style-src. Note that a nonce cannot
- * authorize inline style="" ATTRIBUTES (those need 'unsafe-hashes' plus a
- * per-declaration hash), so style-src-attr stays locked to 'none'. External
- * stylesheets remain covered by 'self'.
+ * Styles are authorized via 'self' only — no nonce. A style nonce caused
+ * FOUC (page loads unstyled until reload) when cached HTML carrying an
+ * expired nonce collided with a fresh response. External stylesheets
+ * (same-origin) are fully covered by 'self'.
  */
 
 const ALLOWED_ORIGINS = new Set([
@@ -43,13 +43,12 @@ function buildCsp(nonce) {
     'img-src \'self\' data:',
     'manifest-src \'self\'',
     'media-src \'none\'',
-    // Nonce authorizes our scripts AND Cloudflare's edge-injected bootstrap:
-    // Cloudflare reads the nonce from this header and stamps it onto the
-    // scripts it appends to the HTML.
+    // Nonce authorizes our scripts AND Cloudflare's edge-injected
+    // bootstrap: Cloudflare reads the nonce from this header and stamps
+    // it onto the scripts it appends to the HTML.
     'script-src \'self\' \'nonce-' + nonce + '\'',
     'script-src-attr \'none\'',
-    // Same nonce authorizes <style> elements; external sheets come from 'self'.
-    'style-src \'self\' \'nonce-' + nonce + '\'',
+    'style-src \'self\'',
     'style-src-attr \'none\'',
     'worker-src \'self\' blob:',
     'upgrade-insecure-requests',
@@ -66,26 +65,15 @@ function makeNonce() {
 }
 
 /**
- * Stamp a nonce onto every <script> and <style> OPENING tag.
+ * Stamp a nonce onto every <script> OPENING tag.
  * Deliberately tight: only opening tags, so attribute values and text
  * content are never corrupted. Case-insensitive on the tag name.
  */
 function stampNonce(html, nonce) {
-  let out = html;
-
-  // <script src="..."> — add nonce after the opening tag name.
-  out = out.replace(/<script(\s[^>]*)?>/gi, (match, attrs) => {
+  return html.replace(/<script(\s[^>]*)?>/gi, (match, attrs) => {
     if (attrs && /\snonce\s*=/i.test(attrs)) return match; // already stamped
     return '<script nonce="' + nonce + '"' + (attrs || '') + '>';
   });
-
-  // <style> — add nonce similarly.
-  out = out.replace(/<style(\s[^>]*)?>/gi, (match, attrs) => {
-    if (attrs && /\snonce\s*=/i.test(attrs)) return match; // already stamped
-    return '<style nonce="' + nonce + '"' + (attrs || '') + '>';
-  });
-
-  return out;
 }
 
 export default {
@@ -116,13 +104,12 @@ export default {
 
     // ---- Serve asset and apply security policy ----
     const assetResponse = await env.ASSETS.fetch(request);
-    
-    // Safety check: If the asset response has no body (e.g., 304 Not Modified),
-    // we cannot rewrite it. Just pass it through with headers.
+
+    // Safety check: if the asset response has no body (e.g., 304),
+    // we cannot rewrite it. Pass it through with headers applied.
     if (!assetResponse.body) {
       const res = new Response(null, assetResponse);
-      
-      // Apply static headers even for empty responses
+
       res.headers.set('Strict-Transport-Security',
         'max-age=63072000; includeSubDomains; preload');
       res.headers.set('Referrer-Policy', 'no-referrer');
@@ -132,7 +119,9 @@ export default {
       res.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
       res.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
       res.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
-      
+      res.headers.set('Content-Security-Policy',
+        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+
       if (originAllowed) {
         res.headers.set('Access-Control-Allow-Origin', origin);
         if (!/\borigin\b/i.test(res.headers.get('Vary') || '')) {
@@ -141,16 +130,7 @@ export default {
       } else {
         res.headers.delete('Access-Control-Allow-Origin');
       }
-      
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.startsWith('text/html')) {
-        res.headers.set('Content-Security-Policy',
-          "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
-      } else {
-        res.headers.set('Content-Security-Policy',
-          "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
-      }
-      
+
       return res;
     }
 
@@ -182,7 +162,8 @@ export default {
     res.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
     res.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
 
-    // ---- HTML: buffer, stamp nonces, re-serve ----
+    // ---- HTML: buffer, stamp script nonces, re-serve ----
+    // Only GET bodies are rewritten; HEAD/204/304 have no body to rewrite.
     const isHtml = contentType.startsWith('text/html');
     const hasBody = request.method === 'GET' &&
       res.status !== 204 && res.status !== 304;
