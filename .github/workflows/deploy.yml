@@ -95,20 +95,35 @@ jobs:
           sleep 15
           BASE="https://tandnhandymanvt.com"
 
+          # Fail fast if the secret wasn't provided
+          test -n "$CI_TOKEN" || { echo "::error::CI_TOKEN secret is not set"; exit 1; }
+
           # All requests carry the secret token so the WAF skip rule
           # lets CI traffic through. Token lives in repo secrets,
           # never in logs.
-          AUTH=("H" "X-CI-Token: ${CI_TOKEN}")
-
-          # Fail fast if the secret wasn't provided
-          test -n "$CI_TOKEN" || { echo "::error::CI_TOKEN secret is not set"; exit 1; }
+          AUTH=(-H "X-CI-Token: ${CI_TOKEN}")
 
           # --- Asset/MIME checks ---
           check_any() {
             url="$1"; shift
-            code=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{http_code}" "$url")
-            ctype=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{content_type}" "$url" | cut -d';' -f1)
+            body="/tmp/smoke_body.$$"
+            out=$(curl -sS "${AUTH[@]}" -o "$body" -w "%{http_code} %{content_type}" "$url" 2>/tmp/smoke_err.$$)
+            code="${out%% *}"
+            ctype="${out#* }"
+            ctype="${ctype%%;*}"
             echo "$url → $code ($ctype)"
+            if [ "$code" = "000" ]; then
+              echo "::error::curl transport failure for $url:"
+              cat /tmp/smoke_err.$$
+              rm -f "$body" /tmp/smoke_err.$$
+              exit 1
+            fi
+            if grep -q "Just a moment" "$body" 2>/dev/null; then
+              echo "::error::$url hit a Cloudflare challenge page — X-CI-Token was not accepted by the WAF skip rule"
+              rm -f "$body" /tmp/smoke_err.$$
+              exit 1
+            fi
+            rm -f "$body" /tmp/smoke_err.$$
             test "$code" = "200" || { echo "::error::$url returned $code"; exit 1; }
             matched=""
             for expected in "$@"; do
