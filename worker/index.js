@@ -7,6 +7,9 @@
  * FOUC (page loads unstyled until reload) when cached HTML carrying an
  * expired nonce collided with a fresh response. External stylesheets
  * (same-origin) are fully covered by 'self'.
+ *
+ * The full nonce CSP is served on ALL HTML responses (GET and HEAD alike);
+ * only GET bodies are rewritten with the nonce, since HEAD has none.
  */
 
 const ALLOWED_ORIGINS = new Set([
@@ -86,13 +89,11 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
-    const origin = request.headers.get('origin');
-    const originAllowed = origin !== null && ALLOWED_ORIGINS.has(origin);
-
     // ---- CORS preflight: answer directly, don't hit the asset store ----
     if (request.method === 'OPTIONS') {
+      const origin = request.headers.get('origin');
       const preflight = new Response(null, { status: 204 });
-      if (originAllowed) {
+      if (origin !== null && ALLOWED_ORIGINS.has(origin)) {
         preflight.headers.set('Access-Control-Allow-Origin', origin);
         preflight.headers.set('Vary', 'Origin');
         preflight.headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
@@ -105,38 +106,22 @@ export default {
     // ---- Serve asset and apply security policy ----
     const assetResponse = await env.ASSETS.fetch(request);
 
-    // Safety check: if the asset response has no body (e.g., 304),
-    // we cannot rewrite it. Pass it through with headers applied.
-    if (!assetResponse.body) {
-      const res = new Response(null, assetResponse);
+    // HEAD/304 responses arrive with the body stripped (by design).
+    // Headers (including content-type) survive, so HTML classification
+    // works even when there's no body to rewrite.
+    const rewritable = request.method === 'GET' &&
+      assetResponse.status !== 204 && assetResponse.status !== 304 &&
+      assetResponse.body !== null;
 
-      res.headers.set('Strict-Transport-Security',
-        'max-age=63072000; includeSubDomains; preload');
-      res.headers.set('Referrer-Policy', 'no-referrer');
-      res.headers.set('X-Content-Type-Options', 'nosniff');
-      res.headers.set('X-XSS-Protection', '0');
-      res.headers.set('X-Frame-Options', 'DENY');
-      res.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-      res.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-      res.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
-      res.headers.set('Content-Security-Policy',
-        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
-
-      if (originAllowed) {
-        res.headers.set('Access-Control-Allow-Origin', origin);
-        if (!/\borigin\b/i.test(res.headers.get('Vary') || '')) {
-          res.headers.append('Vary', 'Origin');
-        }
-      } else {
-        res.headers.delete('Access-Control-Allow-Origin');
-      }
-
-      return res;
-    }
-
-    const res = new Response(assetResponse.body, assetResponse);
+    const res = new Response(rewritable ? assetResponse.body : null, {
+      status: assetResponse.status,
+      statusText: assetResponse.statusText,
+      headers: assetResponse.headers,
+    });
 
     // Dynamic CORS: echo Origin only when allowlisted; otherwise strip ACAO.
+    const origin = request.headers.get('origin');
+    const originAllowed = origin !== null && ALLOWED_ORIGINS.has(origin);
     if (originAllowed) {
       res.headers.set('Access-Control-Allow-Origin', origin);
       // De-duplicate Vary so repeated runs don't stack copies.
@@ -162,18 +147,14 @@ export default {
     res.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
     res.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
 
-    // ---- HTML: apply CSP with nonce, stamp body only if GET ----
+    // ---- HTML: full nonce CSP on ALL methods; body stamped only on GET ----
     const isHtml = contentType.startsWith('text/html');
-    const hasBody = request.method === 'GET' &&
-      res.status !== 204 && res.status !== 304;
-
     if (isHtml) {
       const nonce = makeNonce();
-      const csp = buildCsp(nonce);
-      res.headers.set('Content-Security-Policy', csp);
+      res.headers.set('Content-Security-Policy', buildCsp(nonce));
       res.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
 
-      if (hasBody) {
+      if (rewritable) {
         const charsetMatch = contentType.match(/charset=([\w-]+)/i);
         const charset = charsetMatch ? charsetMatch[1] : 'utf-8';
 
@@ -195,7 +176,8 @@ export default {
 
         return new Response(body, res);
       }
-      // For HEAD/204/304, just return the response with the CSP header set.
+
+      // HEAD: no body to stamp — the CSP header above is the contract.
       return res;
     }
 
