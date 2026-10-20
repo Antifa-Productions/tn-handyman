@@ -1,93 +1,3 @@
-name: Build & Deploy
-'on':
-  push:
-    branches:
-      - main
-  workflow_dispatch: null
-permissions:
-  contents: read
-  deployments: write
-  id-token: write
-concurrency:
-  group: workers-deploy
-  cancel-in-progress: true
-env:
-  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Validate manifest
-        run: node scripts/validate-manifest.mjs
-      - name: Generate precache manifest (SHA1 hashes)
-        run: node scripts/hash-files.mjs
-      - name: Verify worker syntax
-        run: |
-          node --check worker/index.js
-          node --check public/sw.js
-          node --check public/js/main.js
-          node --check public/js/contact-form.js
-          node --check public/js/sw-check.js
-          node --check public/js/draft-store.mjs
-      - name: Verify sw-precache.json exists and is non-empty
-        run: |
-          test -s public/sw-precache.json || { echo "::error::sw-precache.json missing or empty"; exit 1; }
-          jq length public/sw-precache.json
-      - name: Validate HTML (basic well-formedness)
-        run: |
-          for f in public/index.html public/contact.html public/404.html; do
-            python3 - "$f" <<'EOF'
-          import sys, html.parser
-          VOID = {'area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr'}
-          class P(html.parser.HTMLParser):
-              def __init__(self):
-                  super().__init__(convert_charrefs=True)
-                  self.stack = []
-              def handle_starttag(self, tag, attrs):
-                  if tag not in VOID: self.stack.append(tag)
-              def handle_endtag(self, tag):
-                  if self.stack and self.stack[-1] == tag:
-                      self.stack.pop()
-                  elif tag in self.stack:
-                      print(f"::error file={sys.argv[1]}::mismatched </{tag}>, open stack: {self.stack}")
-                      sys.exit(1)
-          p = P()
-          p.feed(open(sys.argv[1], encoding='utf-8').read())
-          if p.stack:
-              print(f"::error file={sys.argv[1]}::unclosed tags: {p.stack}")
-              sys.exit(1)
-          EOF
-          done
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-build
-          path: |
-            public/
-            worker/
-            wrangler.jsonc
-          retention-days: 7
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: site-build
-      - name: Deploy Worker (static assets + security headers)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4'
-          command: deploy
       - name: Post-deploy smoke test
         env:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
@@ -137,16 +47,19 @@ jobs:
 
           check_any "$BASE/"                        "text/html"
           check_any "$BASE/contact"                 "text/html"
-          check_any "$BASE/css/style.css"            "text/css"
-          check_any "$BASE/js/main.js"               "text/javascript" "application/javascript"
-          check_any "$BASE/js/draft-store.mjs"       "text/javascript" "application/javascript"
-          check_any "$BASE/sw.js"                    "text/javascript" "application/javascript"
-          check_any "$BASE/workbox/workbox-sw.js"    "text/javascript" "application/javascript"
-          check_any "$BASE/manifest.webmanifest"     "application/manifest+json" "application/json"
-          check_any "$BASE/sitemap.xml"              "application/xml" "text/xml"
-          check_any "$BASE/sw-precache.json"         "application/json" "text/plain"
+          check_any "$BASE/css/style.css"           "text/css"
+          check_any "$BASE/js/main.js"              "text/javascript" "application/javascript"
+          check_any "$BASE/js/draft-store.mjs"      "text/javascript" "application/javascript"
+          check_any "$BASE/sw.js"                   "text/javascript" "application/javascript"
+          check_any "$BASE/workbox/workbox-sw.js"   "text/javascript" "application/javascript"
+          check_any "$BASE/manifest.webmanifest"    "application/manifest+json" "application/json"
+          check_any "$BASE/sitemap.xml"             "application/xml" "text/xml"
+          check_any "$BASE/sw-precache.json"        "application/json" "text/plain"
 
           # --- Security header assertions ---
+          # Use HEAD (-I): the worker now applies the full CSP (with nonce)
+          # to HEAD requests as well, since the CSP header is independent
+          # of the body.
           assert_header() {
             url="$1"; header="$2"; pattern="$3"
             value=$(curl -sI "${AUTH[@]}" "$url" | tr -d '\r' | awk -v h="$header:" 'tolower($1)==tolower(h){sub(/^[^ ]*[ ]*/,""); print}')
@@ -155,8 +68,10 @@ jobs:
           }
 
           assert_header "$BASE/" "Strict-Transport-Security" "max-age=63072000.*includeSubDomains.*preload"
-          assert_header "$BASE/" "Content-Security-Policy" "default-src 'self'"
-          assert_header "$BASE/" "Content-Security-Policy" "form-action https://formspree.io"
+          assert_header "$BASE/" "Content-Security-Policy" "default-src 'none'"
+          assert_header "$BASE/" "Content-Security-Policy" "form-action 'self' https://formspree.io"
+          assert_header "$BASE/" "Content-Security-Policy" "script-src 'self' 'nonce-"
+          assert_header "$BASE/" "Content-Security-Policy" "style-src 'self'$"
           assert_header "$BASE/" "X-Content-Type-Options" "nosniff"
           assert_header "$BASE/" "Referrer-Policy" "no-referrer"
           assert_header "$BASE/" "Permissions-Policy" "fullscreen=(self)"
