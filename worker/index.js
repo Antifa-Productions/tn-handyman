@@ -162,44 +162,40 @@ export default {
     res.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
     res.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
 
-    // ---- HTML: buffer, stamp script nonces, re-serve ----
-    // Only GET bodies are rewritten; HEAD/204/304 have no body to rewrite.
+    // ---- HTML: apply CSP with nonce, stamp body only if GET ----
     const isHtml = contentType.startsWith('text/html');
     const hasBody = request.method === 'GET' &&
       res.status !== 204 && res.status !== 304;
 
-    if (isHtml && hasBody) {
-      const nonce = makeNonce();
-      const charsetMatch = contentType.match(/charset=([\w-]+)/i);
-      const charset = charsetMatch ? charsetMatch[1] : 'utf-8';
-
-      let html;
-      try {
-        const decoder = new TextDecoder(charset);
-        const buf = await res.arrayBuffer();
-        html = decoder.decode(buf);
-      } catch {
-        const buf = await res.arrayBuffer();
-        html = new TextDecoder('utf-8').decode(buf);
-      }
-
-      res.headers.set('Content-Security-Policy', buildCsp(nonce));
-      res.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
-
-      const encoder = new TextEncoder();
-      const body = encoder.encode(stampNonce(html, nonce));
-      // Avoid content-length / content-encoding mismatch after rewrite.
-      res.headers.set('Content-Length', String(body.byteLength));
-      res.headers.delete('Content-Encoding');
-
-      return new Response(body, res);
-    }
-
-    // ---- HTML without a rewritable body (HEAD/204/304): static CSP ----
     if (isHtml) {
-      res.headers.set('Content-Security-Policy',
-        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+      const nonce = makeNonce();
+      const csp = buildCsp(nonce);
+      res.headers.set('Content-Security-Policy', csp);
       res.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+
+      if (hasBody) {
+        const charsetMatch = contentType.match(/charset=([\w-]+)/i);
+        const charset = charsetMatch ? charsetMatch[1] : 'utf-8';
+
+        let html;
+        try {
+          const decoder = new TextDecoder(charset);
+          const buf = await res.arrayBuffer();
+          html = decoder.decode(buf);
+        } catch {
+          const buf = await res.arrayBuffer();
+          html = new TextDecoder('utf-8').decode(buf);
+        }
+
+        const encoder = new TextEncoder();
+        const body = encoder.encode(stampNonce(html, nonce));
+        // Avoid content-length / content-encoding mismatch after rewrite.
+        res.headers.set('Content-Length', String(body.byteLength));
+        res.headers.delete('Content-Encoding');
+
+        return new Response(body, res);
+      }
+      // For HEAD/204/304, just return the response with the CSP header set.
       return res;
     }
 
