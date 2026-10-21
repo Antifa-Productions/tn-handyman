@@ -147,9 +147,8 @@ jobs:
           check_any "$BASE/sw-precache.json"        "application/json" "text/plain"
 
           # --- Security header assertions ---
-          # Use HEAD (-I): the worker now applies the full CSP (with nonce)
-          # to HEAD requests as well, since the CSP header is independent
-          # of the body.
+          # Use HEAD (-I): the worker serves the full nonce-based CSP on
+          # HEAD requests too — only the body stamping is GET-only.
           assert_header() {
             url="$1"; header="$2"; pattern="$3"
             value=$(curl -sI "${AUTH[@]}" "$url" | tr -d '\r' | awk -v h="$header:" 'tolower($1)==tolower(h){sub(/^[^ ]*[ ]*/,""); print}')
@@ -161,7 +160,7 @@ jobs:
           assert_header "$BASE/" "Content-Security-Policy" "default-src 'none'"
           assert_header "$BASE/" "Content-Security-Policy" "form-action 'self' https://formspree.io"
           assert_header "$BASE/" "Content-Security-Policy" "script-src 'self' 'nonce-"
-          assert_header "$BASE/" "Content-Security-Policy" "style-src 'self'$"
+          assert_header "$BASE/" "Content-Security-Policy" "style-src 'self';"
           assert_header "$BASE/" "X-Content-Type-Options" "nosniff"
           assert_header "$BASE/" "Referrer-Policy" "no-referrer"
           assert_header "$BASE/" "Permissions-Policy" "fullscreen=(self)"
