@@ -181,11 +181,13 @@ jobs:
                  | tr -d '\r' | awk 'tolower($1)=="access-control-allow-origin:"{sub(/^[^ ]*[ ]*/,""); print}')
           test -z "$acao" || { echo "::error::ACAO leaked for disallowed origin: $acao"; exit 1; }
 
-          # www consolidates to apex via 301
+          # www consolidates to apex via a permanent redirect
+          # (301 from the worker, or 308 from Cloudflare's edge-level
+          # redirect rules — both are permanent, so either is fine).
           code=$(curl -s "${AUTH[@]}" -o /dev/null -w "%{http_code}" "https://www.tandnhandymanvt.com/")
           loc=$(curl -sI "${AUTH[@]}" "https://www.tandnhandymanvt.com/" | tr -d '\r' | awk 'tolower($1)=="location:"{print $2}')
           echo "www / → $code ($loc)"
-          test "$code" = "301" || { echo "::error::www did not redirect: $code"; exit 1; }
+          test "$code" = "301" || test "$code" = "308" || { echo "::error::www did not permanently redirect: $code"; exit 1; }
           case "$loc" in https://tandnhandymanvt.com/*) ;; *) echo "::error::unexpected redirect target: $loc"; exit 1;; esac
 
           # 404 page works via the worker's not_found_handling
