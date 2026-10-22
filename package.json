@@ -1,14 +1,39 @@
 {
   "name": "tn-handyman-site",
   "version": "0.0.4",
+  "description": "A Progressive Web App for a handyman service",
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate-manifest.mjs",
     "hash": "node scripts/hash-files.mjs",
-    "check": "node --check public/sw.js && node --check public/js/main.js && node --check public/js/contact-form.js && node --check public/js/sw-check.js",
-    "test": "npm run validate && npm run hash && npm run check"
+    "lint": "node --check public/sw.js && node --check public/js/main.js && node --check public/js/contact-form.js && node --check public/js/sw-check.js",
+    "check": "npm run lint && npm run validate",
+    "test": "npm run hash && npm run check",
+    "format": "prettier --write \"public/**/*.css\" \"public/js/**/*.js\" \"scripts/**/*.mjs\"",
+    "build": "npm run test"
   },
   "engines": {
-    "node": "22"
-  }
+    "node": ">=22 <24"
+  },
+  "author": "Antifa Productions",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Antifa-Productions/tn-handyman.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Antifa-Productions/tn-handyman/issues"
+  },
+  "homepage": "https://github.com/Antifa-Productions/tn-handyman#readme",
+  "devDependencies": {
+    "prettier": "^3.3.2"
+  },
+  "keywords": [
+    "pwa",
+    "handyman",
+    "service-worker",
+    "offline",
+    "node",
+    "esmodule"
+  ]
 }
