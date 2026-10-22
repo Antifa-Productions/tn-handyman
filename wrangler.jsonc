@@ -1,0 +1,18 @@
+{
+    "name": "tn-handyman-site",
+    "main": "worker/index.js",
+    "compatibility_date": "2026-09-01",
+    "assets": {
+        "directory": "./public",
+        "binding": "ASSETS",
+        "not_found_handling": "404-page",
+        "run_worker_first": true
+    },
+    "routes": [
+        { "pattern": "tandnhandymanvt.com", "custom_domain": true },
+        { "pattern": "www.tandnhandymanvt.com", "custom_domain": true }
+    ],
+    "observability": {
+        "enabled": true
+    }
+}

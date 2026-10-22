@@ -6,8 +6,7 @@ async function initDraftStore() {
     try {
         // Dynamic import keeps the no-IDB path working entirely offline
         // even if the module fails to load for any reason.
-        draftStore = await
-        import ('./draft-store.mjs');
+        draftStore = await import('./draft-store.mjs');
     } catch (err) {
         draftStore = null; // Drafts silently disabled
     }
@@ -144,7 +143,7 @@ async function initDraftStore() {
         }
     }
 
-    // ---- Validation (unchanged from previous version) ----
+    // ---- Validation ----
     const validators = {
         name(value) {
             if (!value.trim()) return 'Please enter your name.';
@@ -258,7 +257,8 @@ async function initDraftStore() {
 
             if (response.ok) {
                 setStatus('success',
-                    'Thanks! Your message has been sent. We\u2019ll get back to you shortly.');
+                    'Thanks! Your message has been sent. We\u2019ll get back to you shortly. ' +
+                    'Please text photos of the job to (603) 359‑8272 so we can give an accurate estimate.');
                 form.reset();
                 updateCounter();
                 if (draftStore) await draftStore.clearDraft().catch(() => {});
