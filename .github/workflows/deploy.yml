@@ -23,6 +23,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify Node version range (>=22 <24)
+        run: |
+          node -e "const m=process.versions.node.split('.').map(Number)[0];
+          if(m<22||m>=24){console.error('Node '+m+' outside supported range >=22 <24');process.exit(1)}
+          console.log('Node '+m+' OK')"
       - name: Validate manifest
         run: node scripts/validate-manifest.mjs
       - name: Generate precache manifest (SHA1 hashes)
