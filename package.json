@@ -6,7 +6,7 @@
   "scripts": {
     "validate": "node scripts/validate-manifest.mjs",
     "hash": "node scripts/hash-files.mjs",
-    "lint": "node --check public/sw.js && node --check public/js/main.js && node --check public/js/contact-form.js && node --check public/js/sw-check.js",
+    "lint": "node --check worker/index.js && node --check public/sw.js && node --check public/js/main.js && node --check public/js/contact-form.js && node --check public/js/sw-check.js && node --check public/js/draft-store.mjs",
     "check": "npm run lint && npm run validate",
     "test": "npm run hash && npm run check",
     "format": "prettier --write \"public/**/*.css\" \"public/js/**/*.js\" \"scripts/**/*.mjs\"",
