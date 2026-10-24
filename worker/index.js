@@ -3,10 +3,19 @@
  * Static assets + security headers + dynamic CORS + www consolidation
  * + nonce-based CSP for scripts only (Cloudflare edge-injected scripts).
  *
- * Styles are authorized via 'self' only — no nonce. A style nonce caused
- * FOUC (page loads unstyled until reload) when cached HTML carrying an
- * expired nonce collided with a fresh response. External stylesheets
- * (same-origin) are fully covered by 'self'.
+ * CSP notes:
+ * - No 'sandbox' directive: it overrides normal document semantics and
+ *   conflicts with modal/dialog usage; equivalent protections come from
+ *   frame-ancestors 'none', base-uri 'none', and default-src 'none'.
+ * - No 'require-trusted-types-for': the site's vanilla JS performs direct
+ *   DOM manipulation, which Trusted Types enforcement would break.
+ * - Styles are authorized via 'self' only — no nonce. A style nonce caused
+ *   FOUC (page loads unstyled until reload) when cached HTML carrying an
+ *   expired nonce collided with a fresh response. External stylesheets
+ *   (same-origin) are fully covered by 'self'.
+ * - Element-level fallbacks (script-src-elem, style-src-elem) are included
+ *   so browsers that support them enforce identical rules at the parser
+ *   level, independent of the broader src directives.
  *
  * The full nonce CSP is served on ALL HTML responses (GET and HEAD alike);
  * only GET bodies are rewritten with the nonce, since HEAD has none.
@@ -17,10 +26,57 @@ const ALLOWED_ORIGINS = new Set([
   'https://www.tandnhandymanvt.com',
 ]);
 
+// Verified Permissions-Policy directives only. Entries dropped from the
+// proposed list because they are not registered policy directives:
+//   aria-notify, ch-ua-high-entropy-values, language-model, local-network
+//   (superseded by local-network-access), loopback-network,
+//   on-device-speech-recognition.
 const PERMISSIONS_POLICY =
-  'accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), ' +
-  'fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), ' +
-  'midi=(), payment=(), picture-in-picture=(), usb=(), xr-spatial-tracking=(), interest-cohort=()';
+  'accelerometer=(), ' +
+  'ambient-light-sensor=(), ' +
+  'attribution-reporting=(), ' +
+  'autoplay=(), ' +
+  'bluetooth=(), ' +
+  'browsing-topics=(), ' +
+  'camera=(), ' +
+  'captured-surface-control=(), ' +
+  'compute-pressure=(), ' +
+  'cross-origin-isolated=(), ' +
+  'deferred-fetch=(), ' +
+  'deferred-fetch-minimal=(), ' +
+  'display-capture=(), ' +
+  'encrypted-media=(), ' +
+  'fullscreen=(self), ' +
+  'gamepad=(), ' +
+  'geolocation=(), ' +
+  'gyroscope=(), ' +
+  'hid=(), ' +
+  'identity-credentials-get=(), ' +
+  'idle-detection=(), ' +
+  'language-detector=(), ' +
+  'local-fonts=(), ' +
+  'local-network-access=(), ' +
+  'magnetometer=(), ' +
+  'microphone=(), ' +
+  'midi=(), ' +
+  'otp-credentials=(), ' +
+  'payment=(), ' +
+  'picture-in-picture=(), ' +
+  'private-state-token-issuance=(), ' +
+  'private-state-token-redemption=(), ' +
+  'publickey-credentials-create=(), ' +
+  'publickey-credentials-get=(), ' +
+  'screen-wake-lock=(), ' +
+  'serial=(), ' +
+  'speaker-selection=(), ' +
+  'storage-access=(), ' +
+  'summarizer=(), ' +
+  'translator=(), ' +
+  'unload=(), ' +
+  'usb=(), ' +
+  'web-share=(), ' +
+  'window-management=(), ' +
+  'xr-spatial-tracking=()';
 
 // Prefixes that receive the long-lived cache directive.
 const IMMUTABLE_PREFIXES = [
@@ -43,18 +99,26 @@ function buildCsp(nonce) {
     'font-src \'self\'',
     'form-action \'self\' https://formspree.io',
     'frame-ancestors \'none\'',
+    'frame-src \'none\'',
     'img-src \'self\' data:',
     'manifest-src \'self\'',
     'media-src \'none\'',
+    'object-src \'none\'',
+    'prefetch-src \'self\'',
     // Nonce authorizes our scripts AND Cloudflare's edge-injected
     // bootstrap: Cloudflare reads the nonce from this header and stamps
     // it onto the scripts it appends to the HTML.
+    // No 'sandbox' (conflicts with modal/dialog semantics and duplicates
+    // protections already enforced by the directives below); no
+    // 'require-trusted-types-for' (vanilla JS does direct DOM writes).
     'script-src \'self\' \'nonce-' + nonce + '\'',
     'script-src-attr \'none\'',
+    'script-src-elem \'self\' \'nonce-' + nonce + '\'',
     'style-src \'self\'',
     'style-src-attr \'none\'',
-    'worker-src \'self\' blob:',
+    'style-src-elem \'self\'',
     'upgrade-insecure-requests',
+    'worker-src \'self\' blob:',
   ].join('; ');
 }
 
@@ -92,7 +156,9 @@ export default {
     // ---- CORS preflight: answer directly, don't hit the asset store ----
     if (request.method === 'OPTIONS') {
       const origin = request.headers.get('origin');
-      const preflight = new Response(null, { status: 204 });
+      const preflight = new Response(null, {
+        status: 204
+      });
       if (origin !== null && ALLOWED_ORIGINS.has(origin)) {
         preflight.headers.set('Access-Control-Allow-Origin', origin);
         preflight.headers.set('Vary', 'Origin');
