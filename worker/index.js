@@ -1,7 +1,8 @@
 /**
  * T&N Handyman - consolidated Worker.
  * Static assets + security headers + dynamic CORS + www consolidation
- * + nonce-based CSP for scripts only (Cloudflare edge-injected scripts).
+ * + nonce-based CSP for scripts only (Cloudflare edge-injected scripts)
+ * + no-transform to prevent any intermediary modification.
  *
  * CSP notes:
  * - No 'sandbox' directive: it overrides normal document semantics and
@@ -218,7 +219,8 @@ export default {
     if (isHtml) {
       const nonce = makeNonce();
       res.headers.set('Content-Security-Policy', buildCsp(nonce));
-      res.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+      res.headers.set('Cache-Control',
+        'public, max-age=0, must-revalidate, no-transform');
 
       if (rewritable) {
         const charsetMatch = contentType.match(/charset=([\w-]+)/i);
@@ -256,10 +258,12 @@ export default {
       // CSS/JS/images/fonts/manifest. Safe to raise to a year IF filenames
       // carry a content hash (e.g. style_12.a3f9c1.css); otherwise keep
       // this conservative so edits aren't masked by stale caches.
-      res.headers.set('Cache-Control', 'public, max-age=3600');
+      res.headers.set('Cache-Control',
+        'public, max-age=3600, no-transform');
     } else {
       // JSON, txt, misc: conservative default.
-      res.headers.set('Cache-Control', 'public, max-age=3600');
+      res.headers.set('Cache-Control',
+        'public, max-age=3600, no-transform');
     }
 
     return res;
