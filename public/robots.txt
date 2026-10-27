@@ -1,45 +1,50 @@
-User-agent: GPTBot
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
+# robots.txt — tandnhandymanvt.com
+# Policy: allow search engines and AI answer/retrieval crawlers;
+# opt out of AI model training. Mirrors the X-Robots-Tag header
+# (ai-input=yes, search=yes, ai-train=no) served by the Worker.
 
-User-agent: OAI-SearchBot
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: ChatGPT-User
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: ClaudeBot
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: Claude-User
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: PerplexityBot
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: Google-Extended
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: Applebot-Extended
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: Bytespider
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
-User-agent: CCBot
-Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
-
+# --- Default: everything allowed (search engines + AI search bots) ---
 User-agent: *
 Allow: /
-Content-Signal: ai-input=yes, search=yes, ai-train=no
 
+# --- AI model TRAINING crawlers: opted out (ai-train=no) ---
+# OpenAI
+User-agent: GPTBot
+Disallow: /
+
+# Anthropic (ClaudeBot = training; Claude-SearchBot/Claude-User stay allowed)
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+# Google Gemini/Vertex training (Googlebot search unaffected)
+User-agent: Google-Extended
+Disallow: /
+
+# Apple AI training (Applebot search unaffected)
+User-agent: Applebot-Extended
+Disallow: /
+
+# Common Crawl — feeds many downstream model training sets
+User-agent: CCBot
+Disallow: /
+
+# Meta AI
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+# ByteDance (Doubao LLM)
+User-agent: Bytespider
+Disallow: /
+
+# Amazon (feeds Alexa/AI; revisit if you want Amazonbot search visibility)
+User-agent: Amazonbot
+Disallow: /
+
+# --- Sitemap ---
 Sitemap: https://tandnhandymanvt.com/sitemap.xml
