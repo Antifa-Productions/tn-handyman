@@ -27,7 +27,7 @@ Disallow: /
 User-agent: Applebot-Extended
 Disallow: /
 
-# Common Crawl — feeds many downstream model training sets
+# Common Crawl - feeds many downstream model training sets
 User-agent: CCBot
 Disallow: /
 
