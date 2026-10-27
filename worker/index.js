@@ -3,6 +3,8 @@
  * Static assets + security headers + dynamic CORS + www consolidation
  * + nonce-based CSP for scripts only (Cloudflare edge-injected scripts)
  * + no-transform to prevent any intermediary modification.
+ * + X-Robots-Tag: allows search indexing and AI answer-engine input,
+ *   while prohibiting AI model training on site content.
  *
  * CSP notes:
  * - No 'sandbox' directive: it overrides normal document semantics and
@@ -213,6 +215,13 @@ export default {
     res.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
     res.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
     res.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
+
+    // Robots policy: permit search-engine indexing and retrieval by AI
+    // answer engines (ai-input), but prohibit use of content for AI model
+    // training (ai-train). Applied to all responses — the directives apply
+    // to any resource type crawlers may fetch, not just HTML.
+    res.headers.set('X-Robots-Tag',
+      'ai-input=yes, search=yes, ai-train=no');
 
     // ---- HTML: full nonce CSP on ALL methods; body stamped only on GET ----
     const isHtml = contentType.startsWith('text/html');
