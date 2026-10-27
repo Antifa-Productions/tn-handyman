@@ -5,6 +5,7 @@
 
 # --- Default: everything allowed (search engines + AI search bots) ---
 User-agent: *
+Content-signal: search=yes, ai-train=no, use=reference
 Allow: /
 
 # --- AI model TRAINING crawlers: opted out (ai-train=no) ---
