@@ -1,4 +1,45 @@
+User-agent: GPTBot
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: OAI-SearchBot
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: ChatGPT-User
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: ClaudeBot
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: Claude-User
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: PerplexityBot
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: Google-Extended
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: Applebot-Extended
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: Bytespider
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
+User-agent: CCBot
+Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
+
 User-agent: *
 Allow: /
+Content-Signal: ai-input=yes, search=yes, ai-train=no
 
 Sitemap: https://tandnhandymanvt.com/sitemap.xml
