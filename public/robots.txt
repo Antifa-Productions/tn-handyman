@@ -1,4 +1,4 @@
-# robots.txt - tandnhandymanvt.com
+# robots.txt (tandnhandymanvt.com)
 # Policy: allow search engines and AI answer/retrieval crawlers;
 # opt out of AI model training. Mirrors the X-Robots-Tag header
 # (ai-input=yes, search=yes, ai-train=no) served by the Worker.
@@ -27,7 +27,7 @@ Disallow: /
 User-agent: Applebot-Extended
 Disallow: /
 
-# Common Crawl - feeds many downstream model training sets
+# Common Crawl (feeds many downstream model training sets)
 User-agent: CCBot
 Disallow: /
 
