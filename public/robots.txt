@@ -4,6 +4,7 @@
 # (ai-input=yes, search=yes, ai-train=no) served by the Worker.
 
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Disallow: /contact
 
 Sitemap: https://tandnhandymanvt.com/sitemap.xml
