@@ -9,7 +9,7 @@ From owner and operator **Nathan**, serving the Upper Valley of New Hampshire an
 - Painting, priming, and carpentry
 - Leaky faucets, sticking doors, small repairs
 
-🛡 Fully insured LLC
+**⛨** Fully insured LLC
 
 **Call or Text:** [(603) 359-8272](tel:+16033598272)
 
